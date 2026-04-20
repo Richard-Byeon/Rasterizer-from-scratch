@@ -1,0 +1,8 @@
+*.user
+x64/
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.sln
+main.cpp
+Math Library
