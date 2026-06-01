@@ -1,4 +1,4 @@
-# RASTERIZER-FROM-SCRATCH
+# REALTIME_RENDERER
 
 ## About The Project
 This project is planned for have better understanding of rendering pipeline and implement performance-prioritzed renderer.
