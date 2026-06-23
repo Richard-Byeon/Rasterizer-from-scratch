@@ -2,9 +2,12 @@
 
 // Vec2, 3, 4 init
 
-Vec2::Vec2(float x, float y)					: v{x, y} {}
-Vec3::Vec3(float x, float y, float z)			: v{ x, y, z } {}
-Vec4::Vec4(float x, float y, float z, float w)	: v{ x, y, z, w } {}
+Vec2::Vec2(float x, float y)					:	v{x, y} {}
+
+Vec3::Vec3(float x, float y, float z)			:	v{ x, y, z } {}
+
+Vec4::Vec4(float x, float y, float z, float w)	:	v{ x, y, z, w } {}
+
 
 Vec2 operator+(const Vec2& v1, const Vec2& v2)
 {
@@ -25,6 +28,7 @@ Vec3 operator+(const Vec3& v1, const Vec3& v2)
 
 	return result;
 }
+
 
 Vec3 operator*(const Vec3& v, float s)
 {
@@ -48,6 +52,7 @@ Vec3 operator*(float s, const Vec3& v)
 	return result;
 }
 
+
 float dot(const Vec3& v1, const Vec3& v2)
 {
 	float result = 0;
@@ -70,112 +75,91 @@ Vec3 cross(const Vec3& v1, const Vec3& v2)
 
 float length(const Vec3& v)
 {
-	// i'm wondering if calculating root causes massive overhead
-	// answer to that is NO. Since it's done in FPU (or VPU) [ hardware level ], there is no overhead, so we're gonna use cmath.h
-	// then moving on to the next question
-	// is there any disadvantages to add additional variable? well, no. since the variables are exists only in register for a short period.
-	// but, with that said, it's possible to use additional resource lot. but we're not sure yet.
-
-	// so, i'm just going to use one additional variable so that we have more readability.
-
 	float sq = v.v[0] * v.v[0] + v.v[1] * v.v[1] + v.v[2] * v.v[2];
 
 	return std::sqrt(sq);
 }
 
-Vec3 normalize(const Vec3& v)
+Vec3 normal(const Vec3& v)
 {
 	Vec3 result;
 	float len = length(v);
 
 	if (len == 0.00f) return v;
 
-	result = (1 / len) * v; // less division means less clock cycle, and it means it's all gravy baby.
+	result = (1 / len) * v; 
 
 	return result;
 }
 
 Vec4 cross(const Vec4& v1, const Vec4& v2)
 {
-	// w holds no important value. so we just exclude them.
 	Vec4 result;
 
-	result.v[0] = v1.v[1] * v2.v[2] - v1.v[2] * v2.v[1];
-	result.v[1] = v1.v[2] * v2.v[0] - v1.v[0] * v2.v[2];
-	result.v[2] = v1.v[0] * v2.v[1] - v1.v[1] * v2.v[0];
+	result.v[0] = (v1.v[1] * v2.v[2]) - (v1.v[2] * v2.v[1]);
+	result.v[1] = (v1.v[2] * v2.v[0]) - (v1.v[0] * v2.v[2]);
+	result.v[2] = (v1.v[0] * v2.v[1]) - (v1.v[1] * v2.v[0]);
 	
 	result.v[3] = 0;
 
 	return result;
 }
 
+// Initialize homogenous matrix as a identity matrix
+// Row-major convention
 Mat4::Mat4()
 {
 	for (int i = 0; i < 4; i++)
 	{
 		for (int j = 0; j < 4; j++)
-		{
-			this->m[i][j] = 0;
-		}
+		
+			m[4 * i + j] = 0;
+		
 	}
-	this->m[0][0] = this->m[1][1] = this->m[2][2] = this->m[3][3] = 1; // Set homogenous matrix as a I.
+	// It's possible to set diagonal of M as 1 in the loop, but if that's within the loop it's inevitable to branch during loop.
+	m[0] = m[5] = m[10] = m[15] = 1;
 }
 
-Mat4 operator*(const Mat4& m, float s)
+Mat4 operator*(const Mat4& src, float s)
 {
-	Mat4 target = m;
+	Mat4 result = src;
 
 	for (int i = 0; i < 4; i++)
 	{
 		for (int j = 0; j < 4; j++)
-		{
-			// this way, it's row majored (which ain't that matter really)
-			target.m[i][j] *= s;
-		}
+			result.m[4 * i + j] *= s;
 	}
-	return target;
+
+	return result;
 }
 
 Mat4 operator*(const Mat4& m1, const Mat4& m2)
 {
-	// at first, i'm going to implement the naive version of matrix multiplication. From later on, i'll use more optimized, sped up 
-	// version of M.M.
-
 	Mat4 c;
 
 	for (int i = 0; i < 4; i++)
 	{
 		for (int j = 0; j < 4; j++)
 		{
-			c.m[i][j] = 0;
+			c.m[4 * i + j] = 0;
 
 			for (int k = 0; k < 4; k++)
-			{
-				c.m[i][j] += m1.m[i][k] * m2.m[k][j];
-			}
+				c.m[4 * i + j] += m1.m[4 * i + k] * m2.m[4 * k + j];
 		}
 	}
 	
 	return c;
-	// column pic? or row pic? << row pic is more convenient for me to comprehand, but as for computer, we don't know.
 }
 
-Vec4 operator*(const Mat4& M, const Vec4& v)
+// Row convention
+Vec4 operator*(const Mat4& mat, const Vec4& vec)
 {
-	Vec4 result;
-
-	for (int i = 0; i < 4; i++)
-	{
-		for (int j = 0; j < 4; j++)
-		{
-			// now this is another problem because we have no way to access Vec4 type by index. -> it wouldn't be very serious
-			// problem if we did change the Vec4 struct to array of float types.
-			result.v[i] += (M.m[i][j] * v.v[j]);
-		}
-		
-	}
-
-	return result;
+	return Vec4(
+		(mat.m[0]  * vec.v[0] + mat.m[1]  * vec.v[1] + mat.m[2]  * vec.v[2] + mat.m[3]  * vec.v[3]), // ROW 1
+		(mat.m[4]  * vec.v[0] + mat.m[5]  * vec.v[1] + mat.m[6]  * vec.v[2] + mat.m[7]  * vec.v[3]), // ROW 2
+		(mat.m[8]  * vec.v[0] + mat.m[9]  * vec.v[1] + mat.m[10] * vec.v[2] + mat.m[11] * vec.v[3]), // ROW 3
+		(mat.m[12] * vec.v[0] + mat.m[13] * vec.v[1] + mat.m[14] * vec.v[2] + mat.m[15] * vec.v[3])  // ROW 4
+	);
 
 }
  
@@ -188,11 +172,12 @@ Mat4 transpose(const Mat4& M)
 		for (int j = 0; j < 4; j++)
 		{
 			if (i >= j) continue;
+
 			else
 			{
-				float temp = tmp.m[i][j];
-				tmp.m[i][j] = tmp.m[j][i];
-				tmp.m[j][i] = temp;
+				float temp = tmp.m[4 * i + j];
+				tmp.m[4 * i + j] = tmp.m[4 * j + i];
+				tmp.m[4 * j + i] = temp;
 			}
 
 		}
