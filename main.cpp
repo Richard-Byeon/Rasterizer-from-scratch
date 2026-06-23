@@ -1,21 +1,23 @@
 /*
-							REAL-TIME-RENDERER(RASTERIZER) FROM SCRATCH
+							REAL-TIME-RENDERER(RASTERIZER) FROM SCRATCH 
+
+			FILE: main.cpp (temporary)
 	
-	
-	LAST UPDATE: 23RD, JUNE, 2026
-	LAST MODIFIED FEATURE: WINDOW ALLOCATE
+			LAST UPDATE: 23RD, JUNE, 2026
+			LAST MODIFIED FEATURE: WINDOW ALLOCATE
 */
-
-
-// Rather than keeping the window size to the user, I'm just going to fix the window size and modify it later.
 
 constexpr int WIDTH = 800;
 constexpr int HEIGHT = 600;
 
 #include <SDL3/SDL.h>
+#include "Math/Math.cpp"
+#include "Framebuffer.h"
 
 int main(int argc, char* argv[])
 {
+	std::vector<Pixel> framebuffer(WIDTH * HEIGHT);
+
 	if (!SDL_Init(SDL_INIT_VIDEO))
 	{
 		SDL_Log("SDL_Init failed : %s", SDL_GetError());
@@ -40,6 +42,14 @@ int main(int argc, char* argv[])
 		SDL_Quit();
 		return 1;
 	}
+	
+	// Since my framebuffer uses RGBA, and type of those RGBA is uint_8, we set the texture pixel format to RGBA8888.
+	SDL_Texture* texture = SDL_CreateTexture(
+		renderer,
+		SDL_PIXELFORMAT_RGBA8888,
+		SDL_TEXTUREACCESS_STREAMING,
+		WIDTH, HEIGHT
+	);
 
 	bool running = true;
 	SDL_Event event;
@@ -51,9 +61,15 @@ int main(int argc, char* argv[])
 			if (event.type == SDL_EVENT_QUIT)
 				running = false;
         }
+		SDL_RenderClear(renderer);
+
+		SDL_UpdateTexture(texture, nullptr, framebuffer.data(), WIDTH * sizeof(Pixel));
+
+		SDL_RenderTexture(renderer, texture, nullptr, nullptr);
 
         SDL_RenderPresent(renderer);
-        SDL_RenderClear(renderer);
+        
+
     }
 
     SDL_DestroyRenderer(renderer);
