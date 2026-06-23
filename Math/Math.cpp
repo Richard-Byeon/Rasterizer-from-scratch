@@ -9,68 +9,47 @@ Vec3::Vec3(float x, float y, float z)			:	v{ x, y, z } {}
 Vec4::Vec4(float x, float y, float z, float w)	:	v{ x, y, z, w } {}
 
 
-Vec2 operator+(const Vec2& v1, const Vec2& v2)
+Vec2 operator+(const Vec2& A, const Vec2& B)
 {
-	Vec2 result;
-	result.v[0] = v1.v[0] + v2.v[0];
-	result.v[1] = v1.v[1] + v2.v[1];
-	
-	return result;
+	return Vec2(A.v[0] + B.v[0], 
+				A.v[1] + B.v[1]);
 }
 
-Vec3 operator+(const Vec3& v1, const Vec3& v2)
+Vec3 operator+(const Vec3& A, const Vec3& B)
 {
-	Vec3 result;
-
-	result.v[0] = v1.v[0] + v2.v[0];
-	result.v[1] = v1.v[1] + v2.v[1];
-	result.v[2] = v1.v[2] + v2.v[2];
-
-	return result;
+	return Vec3(A.v[0] + B.v[0], 
+				A.v[1] + B.v[1], 
+				A.v[2] + B.v[2]);
 }
 
 
-Vec3 operator*(const Vec3& v, float s)
+Vec3 operator*(const Vec3& A, float s)
 {
-	Vec3 result;
-
-	result.v[0] = v.v[0] * s;
-	result.v[1] = v.v[1] * s;
-	result.v[2] = v.v[2] * s;
-
-	return result;
+	return Vec3(A.v[0] * s, 
+				A.v[1] * s, 
+				A.v[2] * s);
 }
 
-Vec3 operator*(float s, const Vec3& v)
+Vec3 operator*(float s, const Vec3& A)
 {
-	Vec3 result;
-
-	result.v[0] = v.v[0] * s;
-	result.v[1] = v.v[1] * s;
-	result.v[2] = v.v[2] * s;
-
-	return result;
+	return Vec3(A.v[0] * s,
+				A.v[1] * s,
+				A.v[2] * s);
 }
 
 
-float dot(const Vec3& v1, const Vec3& v2)
+float dot(const Vec3& A, const Vec3& B)
 {
-	float result = 0;
-
-	result = v1.v[0] * v2.v[0] + v1.v[1] * v2.v[1] + v1.v[2] * v2.v[2];
-
-	return result;
+	return ( A.v[0] * B.v[0] + 
+			 A.v[1] * B.v[1] + 
+			 A.v[2] * B.v[2] );
 }
 
 Vec3 cross(const Vec3& v1, const Vec3& v2)
 {
-	Vec3 result;
-
-	result.v[0] = v1.v[1] * v2.v[2] - v1.v[2] * v2.v[1];
-	result.v[1] = v1.v[2] * v2.v[0] - v1.v[0] * v2.v[2];
-	result.v[2] = v1.v[0] * v2.v[1] - v1.v[1] * v2.v[0];
-
-	return result;
+	return Vec3(v1.v[1] * v2.v[2] - v1.v[2] * v2.v[1], 
+				v1.v[2] * v2.v[0] - v1.v[0] * v2.v[2], 
+				v1.v[0] * v2.v[1] - v1.v[1] * v2.v[0]);
 }
 
 float length(const Vec3& v)
@@ -82,30 +61,22 @@ float length(const Vec3& v)
 
 Vec3 normal(const Vec3& v)
 {
-	Vec3 result;
 	float len = length(v);
 
 	if (len == 0.00f) return v;
 
-	result = (1 / len) * v; 
-
-	return result;
+	return Vec3((1/len) * v);
 }
 
-Vec4 cross(const Vec4& v1, const Vec4& v2)
+// Cross product of two Vec4
+Vec4 cross(const Vec4& A, const Vec4& B)
 {
-	Vec4 result;
-
-	result.v[0] = (v1.v[1] * v2.v[2]) - (v1.v[2] * v2.v[1]);
-	result.v[1] = (v1.v[2] * v2.v[0]) - (v1.v[0] * v2.v[2]);
-	result.v[2] = (v1.v[0] * v2.v[1]) - (v1.v[1] * v2.v[0]);
-	
-	result.v[3] = 0;
-
-	return result;
+	return Vec4(A.v[1] * B.v[2] - A.v[2] * B.v[1], 
+				A.v[2] * B.v[0] - A.v[0] * B.v[2], 
+				A.v[0] * B.v[1] - A.v[1] * B.v[0], 0);
 }
 
-// Initialize homogenous matrix as a identity matrix
+// Constructor of Mat4 sets homogenous matrix as a identity matrix
 // Row-major convention
 Mat4::Mat4()
 {
