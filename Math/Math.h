@@ -25,14 +25,11 @@ struct Vec4
 };
 
 struct Mat4 {
-	float m[4][4];
-	// The big question is, that what kind of major we're going to choose. 
-	// I'm going to choose row major. or for readabiltiy, we can choose col major, which is i'm familliar with.
-	// but then, it's more convinient to view matrix multiplication as a product btwn row and a col
-
+	Vec4 m[4];
+	
 	// another big question: how do we implement such thing as a homogenous matrix? 
 	// T = [R T]
-	//	   [0 1] >> we need to keep this format, but not sure how....
+	//	   [O 1] >> we need to keep this format, but not sure how....
 	Mat4();
 };
 
@@ -52,7 +49,7 @@ Vec3 operator*(float s, const Vec3& v1);			// Commutative law
 float dot(const Vec3& v1, const Vec3& v2);			// Dot product
 Vec3 cross(const Vec3& v1, const Vec3& v2);			// Cross prodcut
 float length(const Vec3& v);						// Get a length of the target vector
-Vec3 normalize(const Vec3& v);						// Normazlize 
+Vec3 normalize(const Vec3& v);						// Normalize 
 
 ////////////////////////////
 ////	VEC4 FUNCT	    ////

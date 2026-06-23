@@ -1,3 +1,14 @@
+/*
+							REAL-TIME-RENDERER(RASTERIZER) FROM SCRATCH
+	
+	
+	LAST UPDATE: 23RD, JUNE, 2026
+	LAST MODIFIED FEATURE: WINDOW ALLOCATE
+*/
+
+
+// Rather than keeping the window size to the user, I'm just going to fix the window size and modify it later.
+
 constexpr int WIDTH = 800;
 constexpr int HEIGHT = 600;
 
