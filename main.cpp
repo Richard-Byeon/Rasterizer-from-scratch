@@ -6,17 +6,20 @@
 			LAST UPDATE: 23RD, JUNE, 2026
 			LAST MODIFIED FEATURE: WINDOW ALLOCATE
 */
-
-constexpr int WIDTH = 800;
-constexpr int HEIGHT = 600;
+struct Z {
+	float z = 1.0f;
+};
 
 #include <SDL3/SDL.h>
 #include "Math/Math.cpp"
-#include "Framebuffer.h"
+#include "Framebuffer/Framebuffer.h"
+#include "Bresenhem/Bresenhem.h"
+
 
 int main(int argc, char* argv[])
 {
-	std::vector<Pixel> framebuffer(WIDTH * HEIGHT);
+	std::vector<Pixel>		Framebuffer(WIDTH * HEIGHT);
+	std::vector<Z>			ZBuffer(WIDTH * HEIGHT);
 
 	if (!SDL_Init(SDL_INIT_VIDEO))
 	{
@@ -43,13 +46,47 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	
-	// Since my framebuffer uses RGBA, and type of those RGBA is uint_8, we set the texture pixel format to RGBA8888.
 	SDL_Texture* texture = SDL_CreateTexture(
 		renderer,
 		SDL_PIXELFORMAT_RGBA8888,
 		SDL_TEXTUREACCESS_STREAMING,
 		WIDTH, HEIGHT
 	);
+
+	// SAMPLE POINTS
+	/*
+		V0 = (10, 50)
+		V1 = (60, 10)
+		V2 = (60, 90)
+
+		V3 = (40, 30)
+		V4 = (100, 60)
+		V5 = (50, 100)
+	*/
+	Vec3 v0, v1, v2, 
+		 v3, v4, v5;
+
+	v0 = { 10, 50 };
+	v1 = { 60, 10 };
+	v2 = { 60, 90 };
+
+	v3 = { 40, 30 };
+	v4 = { 100, 60 };
+	v5 = { 50, 100 };
+	int x0, x1, x2, y0, y1, y2;
+
+	x0 = v0.v[0];	 x1 = v1.v[0];		x2 = v2.v[0];
+	y0 = v0.v[1];	 y1 = v1.v[1];		y2 = v2.v[1];
+
+	Bresenhem(x0, y0, x1, y1, Framebuffer);
+	Bresenhem(x1, y1, x2, y2, Framebuffer);
+	Bresenhem(x2, y2, x0, y0, Framebuffer);
+
+	x0 = v3.v[0];	 x1 = v4.v[0];		x2 = v5.v[0];
+	y0 = v3.v[1];	 y1 = v4.v[1];		y2 = v5.v[1];
+	Bresenhem(x0, y0, x1, y1, Framebuffer);
+	Bresenhem(x1, y1, x2, y2, Framebuffer);
+	Bresenhem(x2, y2, x0, y0, Framebuffer);
 
 	bool running = true;
 	SDL_Event event;
@@ -63,13 +100,11 @@ int main(int argc, char* argv[])
         }
 		SDL_RenderClear(renderer);
 
-		SDL_UpdateTexture(texture, nullptr, framebuffer.data(), WIDTH * sizeof(Pixel));
+		SDL_UpdateTexture(texture, nullptr, Framebuffer.data(), WIDTH * sizeof(Pixel));
 
 		SDL_RenderTexture(renderer, texture, nullptr, nullptr);
 
         SDL_RenderPresent(renderer);
-        
-
     }
 
     SDL_DestroyRenderer(renderer);

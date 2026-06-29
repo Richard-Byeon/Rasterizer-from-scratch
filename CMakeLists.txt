@@ -9,7 +9,11 @@ add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
 
 
 # Create your game executable target as usual
-add_executable(RFS main.cpp)
+add_executable(RFS
+    main.cpp
+    Bresenhem/Bresenhem.cpp
+)
 
 # Link to the actual SDL3 library.
 target_link_libraries(RFS PRIVATE SDL3::SDL3)
+target_include_directories(RFS PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
