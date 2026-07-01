@@ -12,6 +12,7 @@ add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
 add_executable(RFS
     main.cpp
     Bresenhem/Bresenhem.cpp
+    Math/Math.cpp
 )
 
 # Link to the actual SDL3 library.

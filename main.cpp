@@ -3,23 +3,23 @@
 
 			FILE: main.cpp (temporary)
 	
-			LAST UPDATE: 23RD, JUNE, 2026
-			LAST MODIFIED FEATURE: WINDOW ALLOCATE
+			LAST UPDATE: 1st, JULY, 2026
+			LAST MODIFIED FEATURE: VERTEX INDEXING (IA) && VERTEX SHADING && BARYCENTRIC COORDINATES && TRIANGLE RASTERIZATION
 */
-struct Z {
-	float z = 1.0f;
-};
 
-#include <SDL3/SDL.h>
-#include "Math/Math.cpp"
-#include "Framebuffer/Framebuffer.h"
-#include "Bresenhem/Bresenhem.h"
+
+#include				 <SDL3/SDL.h>
+#include				"Math/Math.h"
+#include	  "Bresenhem/Bresenhem.h"
+#include			"Vertex/Vertex.h"
 
 
 int main(int argc, char* argv[])
 {
-	std::vector<Pixel>		Framebuffer(WIDTH * HEIGHT);
-	std::vector<Z>			ZBuffer(WIDTH * HEIGHT);
+	std::vector<Color>			Framebuffer(WIDTH * HEIGHT);
+	std::vector<float>			ZBuffer(WIDTH * HEIGHT);
+	std::vector<Vertex>			VertexBuffer(6);
+	std::vector<uint32_t>		IndexBuffer(3 * 2);
 
 	if (!SDL_Init(SDL_INIT_VIDEO))
 	{
@@ -53,40 +53,39 @@ int main(int argc, char* argv[])
 		WIDTH, HEIGHT
 	);
 
-	// SAMPLE POINTS
-	/*
-		V0 = (10, 50)
-		V1 = (60, 10)
-		V2 = (60, 90)
 
-		V3 = (40, 30)
-		V4 = (100, 60)
-		V5 = (50, 100)
-	*/
+
+
+	// VERTICES
 	Vec3 v0, v1, v2, 
 		 v3, v4, v5;
 
-	v0 = { 10, 50 };
-	v1 = { 60, 10 };
-	v2 = { 60, 90 };
+	v0 = { 100, 100, 0 };
+	v1 = { 250, 100, 0 };
+	v2 = { 400, 100, 0 };
+	v3 = { 175, 300, 0 };
+	v4 = { 325, 300, 0 };
+	v5 = { 475, 300, 0 };
 
-	v3 = { 40, 30 };
-	v4 = { 100, 60 };
-	v5 = { 50, 100 };
-	int x0, x1, x2, y0, y1, y2;
+	VertexBuffer[0].Pos = { 100, 100, 0 };   // top-left
+	VertexBuffer[1].Pos = { 250, 100, 0 };   // top-mid-left
+	VertexBuffer[2].Pos = { 400, 100, 0 };   // top-mid-right
+	VertexBuffer[3].Pos = { 175, 300, 0 };   // bottom-left
+	VertexBuffer[4].Pos = { 325, 300, 0 };   // bottom-mid
+	VertexBuffer[5].Pos = { 475, 300, 0 };   // bottom-right
 
-	x0 = v0.v[0];	 x1 = v1.v[0];		x2 = v2.v[0];
-	y0 = v0.v[1];	 y1 = v1.v[1];		y2 = v2.v[1];
+	IndexBuffer = {
+		0, 3, 1,   // tri 0
+		1, 3, 4,   // tri 1
+		1, 4, 2,   // tri 2
+		2, 4, 5    // tri 3
+	};
 
-	Bresenhem(x0, y0, x1, y1, Framebuffer);
-	Bresenhem(x1, y1, x2, y2, Framebuffer);
-	Bresenhem(x2, y2, x0, y0, Framebuffer);
+	Draw(VertexBuffer, IndexBuffer, Framebuffer);
 
-	x0 = v3.v[0];	 x1 = v4.v[0];		x2 = v5.v[0];
-	y0 = v3.v[1];	 y1 = v4.v[1];		y2 = v5.v[1];
-	Bresenhem(x0, y0, x1, y1, Framebuffer);
-	Bresenhem(x1, y1, x2, y2, Framebuffer);
-	Bresenhem(x2, y2, x0, y0, Framebuffer);
+
+
+
 
 	bool running = true;
 	SDL_Event event;
