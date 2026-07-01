@@ -4,6 +4,9 @@
 
 
 */
+
+#include "Math/Math.h"
+
 struct Color
 {
 	uint8_t R = 255;
