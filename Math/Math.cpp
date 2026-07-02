@@ -6,8 +6,8 @@ Vec2::Vec2(float x, float y)					:	v{x, y} {}
 
 Vec3::Vec3(float x, float y, float z)			:	v{ x, y, z } {}
 
+Vec4::Vec4(Vec3 pos, float w)					:	v{ pos.v[0], pos.v[1], pos.v[2], w } {}
 Vec4::Vec4(float x, float y, float z, float w)	:	v{ x, y, z, w } {}
-
 
 Vec2 operator+(const Vec2& A, const Vec2& B)
 {
@@ -155,5 +155,75 @@ Mat4 transpose(const Mat4& M)
 	}
 
 	return tmp;
+}
+
+Mat4 RotationX(float angle = 0.0f)
+{
+	angle = angle * (PI / 180);
+
+	Mat4 Matrix;
+	Matrix.m[5] = cos(angle);	Matrix.m[6]	 = -sin(angle);
+	Matrix.m[9] = sin(angle);	Matrix.m[10] = cos(angle);
+
+	return Matrix;
+}
+
+Mat4 RotationY(float angle = 0.0f)
+{
+	angle = angle * (PI / 180);
+
+	Mat4 Matrix;
+	Matrix.m[0] =  cos(angle);	Matrix.m[2]  = sin(angle);
+	Matrix.m[8] = -sin(angle);	Matrix.m[10] = cos(angle);
+
+	return Matrix;
+}
+
+Mat4 RotationZ(float angle = 0.0f)
+{
+	angle = angle * (PI / 180);
+
+	Mat4 Matrix;
+	Matrix.m[0] = cos(angle);	Matrix.m[1] = -sin(angle);
+	Matrix.m[4] = sin(angle);	Matrix.m[5] = cos(angle);
+
+	return Matrix;
+}
+
+Mat4 Scale(const Vec3& scalar = { 1.0f, 1.0f, 1.0f })
+{	
+	Mat4 Matrix;
+
+	Matrix.m[0] = scalar.v[0];
+	Matrix.m[5] = scalar.v[1];
+	Matrix.m[10] = scalar.v[2];
+	
+	return Matrix;
+}
+
+Mat4 Translation(const Vec3& v)
+{
+	Mat4 Matrix;
+
+	Matrix.m[3]	 = v.v[0];
+	Matrix.m[7]	 = v.v[1];
+	Matrix.m[11] = v.v[2];
+
+	return Matrix;
+}
+
+Mat4 HomogenousMatrix(const Vec3& translation, const Vec3& angle, const Vec3& scale)
+{
+	Mat4 T;
+	Mat4 R;
+	Mat4 S;
+
+	T = Translation(translation);
+	R = RotationZ(angle.v[2]) * RotationY(angle.v[1]) * RotationX(angle.v[0]);
+	S = Scale(scale);
+
+	// Product order: RZ * RY * RX ( yaw * pitch * roll )
+
+	return T * R * S;
 }
 

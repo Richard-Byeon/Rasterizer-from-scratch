@@ -20,5 +20,5 @@ struct Vertex
 	Vec2 UV;            // 8
 	Vec3 Normal;        // 12
 	Vec3 Pos;           // 12
-	Color Color;        // 16
+	Color Color;        // 4
 };

@@ -1,6 +1,6 @@
 #pragma once
 /*
-		FILE: Framebuffer.
+		FILE: Framebuffer.h
 
 		I wrote this separate to the main file. I wanted to leave a room for dynamic allocation of WIDTH and HEIGHT
 
