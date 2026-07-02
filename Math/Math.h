@@ -62,7 +62,7 @@ Mat4 operator*(const Mat4&, const Mat4&);
 Vec4 operator*(const Mat4&, const Vec4&);		
 Mat4 transpose(const Mat4& m);						
 Mat4& invert(const Mat4& m);						
-Mat4 HomogenousMatrix(Vec3& translation, Vec3& angle, Vec3& scale);
+Mat4 HomogenousMatrix(const Vec3& translation, const Vec3& angle, const Vec3& scale);
 
 /////////////////////////
 ////	TRNSFRMTN	 ////
@@ -74,6 +74,6 @@ Mat4 RotationY(float angle);
 Mat4 RotationZ(float angle);
 
 // Scale
-Mat4 Scale(const Vec3& scalar);
+Mat4 Scale(const Vec3& scalar = {1, 1, 1});
 
 Mat4 Translation(const Vec3& v);

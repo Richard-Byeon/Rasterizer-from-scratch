@@ -1,10 +1,9 @@
 #pragma once
 
-#include "Framebuffer/Framebuffer.h"
 #include "Vertex/Vertex.h"
 
 constexpr int WIDTH = 800;
 constexpr int HEIGHT = 600;
 
-void Bresenhem(int x0, int y0, int x1, int x2, std::vector<Pixel>& dest);
+void Bresenhem(int x0, int y0, int x1, int x2, std::vector<Color>& dest);
 void Draw(std::vector<Vertex>& vbuffer, std::vector<uint32_t>& ibuffer, std::vector<Color>& fbuffer);

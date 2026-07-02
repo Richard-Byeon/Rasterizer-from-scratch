@@ -3,15 +3,18 @@
 
 			FILE: main.cpp (temporary)
 	
-			LAST UPDATE: 1st, JULY, 2026
-			LAST MODIFIED FEATURE: VERTEX INDEXING (IA) && VERTEX SHADING && BARYCENTRIC COORDINATES && TRIANGLE RASTERIZATION
+			LAST UPDATE: 2nd, JULY, 2026
+			LAST MODIFIED FEATURE: VERTEX INDEXING (IA) && VERTEX SHADING
 */
 
 
 #include				 <SDL3/SDL.h>
 #include				"Math/Math.h"
 #include	  "Bresenhem/Bresenhem.h"
-#include			"Vertex/Vertex.h"
+#include	"Barycentric/Barycentric.h"
+		
+#include	"Vertex/VertexShading.h"
+
 
 
 int main(int argc, char* argv[])
@@ -81,12 +84,16 @@ int main(int argc, char* argv[])
 		2, 4, 5    // tri 3
 	};
 
+	Vec3 Translation = { 100, 300, 0 };
+	Vec3	   angle = { 10, 10, 10 };
+	Vec3	   scale = { 0.5, 0.5, 0.5 };
+
 	Draw(VertexBuffer, IndexBuffer, Framebuffer);
 
+	ModelTransform(VertexBuffer, Translation, angle, scale);
 
-
-
-
+	Draw(VertexBuffer, IndexBuffer, Framebuffer);
+		
 	bool running = true;
 	SDL_Event event;
 
@@ -99,7 +106,7 @@ int main(int argc, char* argv[])
         }
 		SDL_RenderClear(renderer);
 
-		SDL_UpdateTexture(texture, nullptr, Framebuffer.data(), WIDTH * sizeof(Pixel));
+		SDL_UpdateTexture(texture, nullptr, Framebuffer.data(), WIDTH * sizeof(Color));
 
 		SDL_RenderTexture(renderer, texture, nullptr, nullptr);
 

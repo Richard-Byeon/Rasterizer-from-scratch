@@ -190,7 +190,7 @@ Mat4 RotationZ(float angle = 0.0f)
 	return Matrix;
 }
 
-Mat4 Scale(const Vec3& scalar = { 1.0f, 1.0f, 1.0f })
+Mat4 Scale(const Vec3& scalar)
 {	
 	Mat4 Matrix;
 

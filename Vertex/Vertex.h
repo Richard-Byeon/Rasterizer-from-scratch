@@ -5,7 +5,11 @@
 
 */
 
+#include <vector>
 #include "Math/Math.h"
+
+#define WHITE 255
+#define BLACK 0
 
 struct Color
 {
