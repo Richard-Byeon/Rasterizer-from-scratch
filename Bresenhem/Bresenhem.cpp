@@ -60,10 +60,19 @@ void Bresenhem(int x0, int y0, int x1, int y1, std::vector<Color>& dest)
         }
     }
 }
-
+//void ClearFrame(std::vector<Color>& fBuffer)
+//{
+//    for (int y = 0; y < HEIGHT; y++)
+//    {
+//        for (int x = 0; x < WIDTH; x++)
+//            fBuffer[y * HEIGHT + x] = { WHITE, WHITE, WHITE, WHITE };
+//    }
+//}
 // Draws triangle
 void Draw(std::vector<Vertex>& vbuffer, std::vector<uint32_t>& ibuffer, std::vector<Color>& fbuffer) 
 {
+    // ClearFrame(fbuffer);
+    
     // Divide index buffer's size by 3 so that we can stride(or traverse) index buffer by 3.
     int triangleCount = ibuffer.size() / 3;
 

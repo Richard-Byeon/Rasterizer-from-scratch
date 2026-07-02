@@ -61,7 +61,7 @@ Vec4 cross(const Vec4& v1, const Vec4& v2);
 Mat4 operator*(const Mat4&, float);				
 Mat4 operator*(const Mat4&, const Mat4&);		
 Vec4 operator*(const Mat4&, const Vec4&);		
-Mat4 transpose(const Mat4& m);						
+Mat4 Transpose(const Mat4& m);						
 Mat4& invert(const Mat4& m);						
 Mat4 HomogenousMatrix(const Vec3& translation, const Vec3& angle, const Vec3& scale);
 

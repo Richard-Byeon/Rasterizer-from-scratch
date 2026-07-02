@@ -1,6 +1,11 @@
+/*
+	FILE: VertexShading.cpp
+
+*/
+
 #include "VertexShading.h"
 
-std::vector<Vertex> ModelTransform(
+void ModelTransform(
 	std::vector<Vertex>& vBufferIn, 
 	const Vec3& translation,
 	const Vec3& angle,
@@ -9,7 +14,7 @@ std::vector<Vertex> ModelTransform(
 	
 	int VertexCount = vBufferIn.size();
 
-	std::vector<Vertex> vBufferOut(VertexCount);
+	/*std::vector<Vertex> vBufferOut(VertexCount);*/
 	std::vector<Vec4>	Vertices(VertexCount);
 
 	
@@ -26,18 +31,17 @@ std::vector<Vertex> ModelTransform(
 	
 	for (int i = 0; i < VertexCount; i++)
 	{
-		vBufferOut[i].Pos.v[0] = Vertices[i].v[0];
-		vBufferOut[i].Pos.v[1] = Vertices[i].v[1];
-		vBufferOut[i].Pos.v[2] = Vertices[i].v[2];
+		vBufferIn[i].Pos.v[0] = Vertices[i].v[0];
+		vBufferIn[i].Pos.v[1] = Vertices[i].v[1];
+		vBufferIn[i].Pos.v[2] = Vertices[i].v[2];
 	}
-
-	return vBufferOut; // this goes straight to ViewTransform(...)
+	 // this goes straight to ViewTransform(...)
 }
 
-std::vector<Vertex> ViewTransform(std::vector<Vertex>& vBufferIn, const Camera& Camera)
+void ViewTransform(std::vector<Vertex>& vBufferIn, const Camera& Camera)
 {
 	int VertexCount = vBufferIn.size();
-	std::vector<Vertex> vBufferOut(VertexCount);
+	/*std::vector<Vertex> vBufferOut(VertexCount);*/
 	std::vector<Vec4>	Vertices(VertexCount);
 
 	for (int i = 0; i < VertexCount; i++)
@@ -72,10 +76,10 @@ std::vector<Vertex> ViewTransform(std::vector<Vertex>& vBufferIn, const Camera& 
 
 	for (int i = 0; i < VertexCount; i++)
 	{
-		vBufferOut[i].Pos.v[0] = Vertices[i].v[0];
-		vBufferOut[i].Pos.v[1] = Vertices[i].v[1];
-		vBufferOut[i].Pos.v[2] = Vertices[i].v[2];
+		vBufferIn[i].Pos.v[0] = Vertices[i].v[0];
+		vBufferIn[i].Pos.v[1] = Vertices[i].v[1];
+		vBufferIn[i].Pos.v[2] = Vertices[i].v[2];
 	}
 
-	return vBufferOut; // this goes straight to PerspectiveTransform
+	//return vBufferOut; // this goes straight to PerspectiveTransform
 }
