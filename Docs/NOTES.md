@@ -44,10 +44,13 @@ Model(World) Transform → View Transform → Projection
   **UP**: Vector that is orthogonal to the camera (Obviously, vector points upward)
 
   From this, camera space
+  
 $$
 \begin{pmatrix} u \\ v \\ n \\ \mathbf{EYE} \end{pmatrix}
 $$
+
   can be created.
+
 $$
 \begin{aligned}
 n &= \frac{\mathbf{AT} - \mathbf{EYE}}{|\mathbf{AT} - \mathbf{EYE}|} \\
