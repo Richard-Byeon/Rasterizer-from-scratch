@@ -11,9 +11,9 @@
 #include				 <SDL3/SDL.h>
 #include				"Math/Math.h"
 #include	  "Bresenhem/Bresenhem.h"
-#include	"Barycentric/Barycentric.h"
-		
-#include	"Vertex/VertexShading.h"
+#include  "Barycentric/Barycentric.h"
+#include			"Camera/Camera.h"
+#include	 "Vertex/VertexShading.h"
 
 
 
@@ -21,8 +21,12 @@ int main(int argc, char* argv[])
 {
 	std::vector<Color>			Framebuffer(WIDTH * HEIGHT);
 	std::vector<float>			ZBuffer(WIDTH * HEIGHT);
-	std::vector<Vertex>			VertexBuffer(6);
-	std::vector<uint32_t>		IndexBuffer(3 * 2);
+
+	int VertexCount = 6;
+	int TriangleCount = 2;
+
+	std::vector<Vertex>			VertexBuffer(VertexCount);
+	std::vector<uint32_t>		IndexBuffer(3 * TriangleCount);
 
 	if (!SDL_Init(SDL_INIT_VIDEO))
 	{
@@ -57,7 +61,7 @@ int main(int argc, char* argv[])
 	);
 
 
-
+	Camera camera;
 
 	// VERTICES
 	Vec3 v0, v1, v2, 
@@ -84,9 +88,21 @@ int main(int argc, char* argv[])
 		2, 4, 5    // tri 3
 	};
 
+	camera.AT = v0;
+	camera.EYE = { 400, 100, 30 };
+	camera.UP = { 170, 150, 20 };
+	camera.n = normal(camera.AT - camera.EYE);
+	camera.u = cross(camera.UP, camera.n);
+	camera.v = cross(camera.n, camera.u);
+
+
+
+
 	Vec3 Translation = { 100, 300, 0 };
 	Vec3	   angle = { 10, 10, 10 };
 	Vec3	   scale = { 0.5, 0.5, 0.5 };
+	
+	
 
 	Draw(VertexBuffer, IndexBuffer, Framebuffer);
 

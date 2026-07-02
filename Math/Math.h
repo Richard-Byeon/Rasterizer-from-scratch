@@ -40,6 +40,7 @@ Vec2 operator+(const Vec2& v1, const Vec2& v2);
 ///////////////////////////
 
 Vec3 operator+(const Vec3& v1, const Vec3& v2);		// Simple addition
+Vec3 operator-(const Vec3& v1, const Vec3& v2);
 Vec3 operator*(const Vec3& v1, float s);			// Multiplied by scalar s
 Vec3 operator*(float s, const Vec3& v1);			// Commutative law
 float dot(const Vec3& v1, const Vec3& v2);			// Dot product

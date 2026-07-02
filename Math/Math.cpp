@@ -14,7 +14,12 @@ Vec2 operator+(const Vec2& A, const Vec2& B)
 	return Vec2(A.v[0] + B.v[0], 
 				A.v[1] + B.v[1]);
 }
-
+Vec3 operator-(const Vec3& A, const Vec3& B)
+{
+	return Vec3(A.v[0] - B.v[0],
+				A.v[1] - B.v[1],
+				A.v[2] - B.v[2]);
+}
 Vec3 operator+(const Vec3& A, const Vec3& B)
 {
 	return Vec3(A.v[0] + B.v[0], 
