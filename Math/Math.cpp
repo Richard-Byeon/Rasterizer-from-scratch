@@ -138,8 +138,8 @@ Vec4 operator*(const Mat4& mat, const Vec4& vec)
 	);
 
 }
- 
-Mat4 transpose(const Mat4& M)
+
+Mat4 Transpose(const Mat4& M)
 {
 	Mat4 tmp = M;
 

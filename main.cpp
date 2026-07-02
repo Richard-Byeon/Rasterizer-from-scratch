@@ -95,9 +95,6 @@ int main(int argc, char* argv[])
 	camera.u = cross(camera.UP, camera.n);
 	camera.v = cross(camera.n, camera.u);
 
-
-
-
 	Vec3 Translation = { 100, 300, 0 };
 	Vec3	   angle = { 10, 10, 10 };
 	Vec3	   scale = { 0.5, 0.5, 0.5 };
