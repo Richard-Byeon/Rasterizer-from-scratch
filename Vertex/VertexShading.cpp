@@ -83,3 +83,105 @@ void ViewTransform(std::vector<Vertex>& vBufferIn, const Camera& Camera)
 
 	//return vBufferOut; // this goes straight to PerspectiveTransform
 }
+
+void OrthographicProjection(std::vector<Vertex>& vBufferIn)
+{
+	Mat4 ProjM;
+	ProjM.m[10] = 0;
+
+	int VertexCount = vBufferIn.size();
+	std::vector<Vec4>	Vertices(VertexCount);
+
+	for (int i = 0; i < VertexCount; i++)
+		Vertices[i] = Vec4(vBufferIn[i].Pos, 0);
+
+
+	for (int i = 0; i < VertexCount; i++)
+		Vertices[i] = ProjM * Vertices[i];
+
+	for (int i = 0; i < VertexCount; i++)
+	{
+		vBufferIn[i].Pos.v[0] = Vertices[i].v[0];
+		vBufferIn[i].Pos.v[1] = Vertices[i].v[1];
+		vBufferIn[i].Pos.v[2] = Vertices[i].v[2];
+	}
+}
+
+void PerspectiveProjection(std::vector<Vertex>& vBufferIn, float fovy, float ASPECT)
+{
+	Mat4 ProjM;
+	float cot = 1 / tan(fovy / 2);
+	float f, n;
+	f = 100.0f; n = 1.0f;
+	ProjM.m[0] = cot / ASPECT;
+	ProjM.m[5] = cot;
+	ProjM.m[10] = f / (f - n);
+	ProjM.m[11] = 1;
+	ProjM.m[14] = -(f * n) / (f - n);
+	ProjM.m[15] = 0;
+
+	ProjM = Transpose(ProjM);
+
+	int VertexCount = vBufferIn.size();
+	std::vector<Vec4>	Vertices(VertexCount);
+
+	for (int i = 0; i < VertexCount; i++)
+		Vertices[i] = Vec4(vBufferIn[i].Pos, 1);
+
+
+	for (int i = 0; i < VertexCount; i++)
+		Vertices[i] = ProjM * Vertices[i];
+
+	for (int i = 0; i < VertexCount; i++)
+	{
+		vBufferIn[i].Pos.v[0] = Vertices[i].v[0];
+		vBufferIn[i].Pos.v[1] = Vertices[i].v[1];
+		vBufferIn[i].Pos.v[2] = Vertices[i].v[2];
+		vBufferIn[i].W		  = Vertices[i].v[3];
+	}
+}
+
+void ViewPortTransfrom(std::vector<Vertex>& vBufferIn, int width, int height)
+{
+	// Perspective Division first
+	int VertexCount = vBufferIn.size();
+	std::vector<Vec4>	Vertices(VertexCount);
+
+	for (int i = 0; i < VertexCount; i++)
+		Vertices[i] = Vec4(vBufferIn[i].Pos, vBufferIn[i].W);
+
+	
+	for (int i = 0; i < VertexCount; i++)
+	{
+		float w = Vertices[i].v[3];
+
+		Vertices[i].v[0] /= w; 
+		Vertices[i].v[1] /= w;
+		Vertices[i].v[2] /= w;
+		Vertices[i].v[3] = 1.0f;
+		vBufferIn[i].W = w;
+	}
+
+	ViewPort View;
+	
+	Mat4 ViewPortM;
+	Mat4 S;
+	Mat4 T;
+
+	View.Height = height;
+	View.Width = width;
+
+	S = Scale({ (float)width / 2, -(float)height / 2, View.MaxDepth - View.MinDepth });
+	T = Translation({ View.TopLeftX + width / 2, View.TopLeftY + height / 2, View.MinDepth });
+	ViewPortM = T * S;
+
+	for (int i = 0; i < VertexCount; i++)
+		Vertices[i] = ViewPortM * Vertices[i];
+
+	for (int i = 0; i < VertexCount; i++)
+	{
+		vBufferIn[i].Pos.v[0] = Vertices[i].v[0];
+		vBufferIn[i].Pos.v[1] = Vertices[i].v[1];
+		vBufferIn[i].Pos.v[2] = Vertices[i].v[2];
+	}
+}

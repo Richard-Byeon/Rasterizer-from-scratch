@@ -1,13 +1,13 @@
 /*
 							REAL-TIME-RENDERER(RASTERIZER) FROM SCRATCH 
 
-			FILE: main.cpp (temporary)
+			FILE: main.cpp (temporary name)
 	
-			LAST UPDATE: 2nd, JULY, 2026
-			LAST MODIFIED FEATURE: VERTEX INDEXING (IA) && VERTEX SHADING
+			LAST UPDATE: 8th, JULY, 2026
+			LAST MODIFIED FEATURE: VIEWPORT TRANSFORM & PERSPECTIVE DIVISION & W GUARD
 */
 
-
+#include				 <algorithm>
 #include				 <SDL3/SDL.h>
 #include				"Math/Math.h"
 #include	  "Bresenhem/Bresenhem.h"
@@ -15,7 +15,12 @@
 #include			"Camera/Camera.h"
 #include	 "Vertex/VertexShading.h"
 
+// ASPECT = HEIGHT(600) / WIDTH(800) = 3/4
 
+constexpr float ASPECT = (float)WIDTH / (float)HEIGHT;
+
+float fovy = 60 * PI / 180.0f;
+float fovx = 2 * atan(ASPECT * tan(fovy / 2));
 
 int main(int argc, char* argv[])
 {
@@ -152,25 +157,36 @@ int main(int argc, char* argv[])
 		19, 18, 13,
 	};
 
+	std::vector<Vertex> VertexBufferOriginal = VertexBuffer;
+
+	
+
+	Vec3 Translation = { 400, 300, 300 };
+	Vec3	   Angle = { 18, 14, 14 };
+	Vec3	   Scale = { 1, 1, 1 };
+	
+	ModelTransform(VertexBuffer, Translation, Angle, Scale);
+	
 	camera.AT = VertexBuffer[0].Pos;
 	camera.EYE = { 400, 100, 30 };
 	camera.UP = { 170, 150, 20 };
 
 	camera.n = normal(camera.AT - camera.EYE);
+
 	camera.u = cross(camera.UP, camera.n);
+	camera.u = normal(camera.u);
+
 	camera.v = cross(camera.n, camera.u);
+	camera.v = normal(camera.v);
 
-	Vec3 Translation = { 500, 200, 120 };
-	Vec3	   Angle = { 14, 14, 14 };
-	Vec3	   Scale = { 1.4, 1.4, 1.4 };
-	
-	ModelTransform(VertexBuffer, Translation, Angle, Scale);
+	ViewTransform(VertexBuffer, camera);
+
+	PerspectiveProjection(VertexBuffer, fovy, ASPECT);
+
+	ViewPortTransfrom(VertexBuffer, WIDTH, HEIGHT);
 
 	Draw(VertexBuffer, IndexBuffer, Framebuffer);
 	
-	ViewTransform(VertexBuffer, camera); // without ProjectionTransform, this does nothing to object. besides, we don't even have a object yet.
-	
-	Draw(VertexBuffer, IndexBuffer, Framebuffer);
 
 	bool running = true;
 	SDL_Event event;
@@ -182,13 +198,11 @@ int main(int argc, char* argv[])
 			if (event.type == SDL_EVENT_QUIT)
 				running = false;
         }
+		
 		SDL_RenderClear(renderer);
-
 		SDL_UpdateTexture(texture, nullptr, Framebuffer.data(), WIDTH * sizeof(Color));
-
 		SDL_RenderTexture(renderer, texture, nullptr, nullptr);
-
-        SDL_RenderPresent(renderer);
+		SDL_RenderPresent(renderer);
     }
 
     SDL_DestroyRenderer(renderer);
