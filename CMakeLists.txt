@@ -14,6 +14,7 @@ add_executable(RFS
     Bresenhem/Bresenhem.cpp
     Math/Math.cpp
     Vertex/VertexShading.cpp
+    Barycentric/Barycentric.cpp
 )
 
 # Link to the actual SDL3 library.

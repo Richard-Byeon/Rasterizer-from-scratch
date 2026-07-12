@@ -19,19 +19,19 @@
 
 constexpr float ASPECT = (float)WIDTH / (float)HEIGHT;
 
-float fovy = 60 * PI / 180.0f;
+float fovy = 60 * (PI / 180.0f);
 float fovx = 2 * atan(ASPECT * tan(fovy / 2));
 
 int main(int argc, char* argv[])
 {
 	std::vector<Color>			Framebuffer(WIDTH * HEIGHT);
-	std::vector<float>			ZBuffer(WIDTH * HEIGHT);
-
+	std::vector<float>			ZBuffer	   (WIDTH * HEIGHT);
 	
-	int VertexCount = 20;
-	int TriangleCount = 36;
+	
+	int VertexCount = 42;
+	int TriangleCount = 80;
 	std::vector<Vertex>			VertexBuffer(VertexCount);
-	std::vector<uint32_t>		IndexBuffer(TriangleCount);
+	std::vector<uint32_t>		IndexBuffer (TriangleCount);
 
 	if (!SDL_Init(SDL_INIT_VIDEO))
 	{
@@ -68,51 +68,48 @@ int main(int argc, char* argv[])
 
 	Camera camera;
 
-	// VERTICES
-	//Vec3 v0, v1, v2, 
-	//	 v3, v4, v5;
-
-	//v0 = { 100, 100, 0 };
-	//v1 = { 250, 100, 0 };
-	//v2 = { 400, 100, 0 };
-	//v3 = { 175, 300, 0 };
-	//v4 = { 325, 300, 0 };
-	//v5 = { 475, 300, 0 };
-
-	//VertexBuffer[0].Pos = { 100, 100, 0 };   // top-left
-	//VertexBuffer[1].Pos = { 250, 100, 0 };   // top-mid-left
-	//VertexBuffer[2].Pos = { 400, 100, 0 };   // top-mid-right
-	//VertexBuffer[3].Pos = { 175, 300, 0 };   // bottom-left
-	//VertexBuffer[4].Pos = { 325, 300, 0 };   // bottom-mid
-	//VertexBuffer[5].Pos = { 475, 300, 0 };   // bottom-right
-
-	//IndexBuffer = {
-	//	0, 3, 1,   // tri 0
-	//	1, 3, 4,   // tri 1
-	//	1, 4, 2,   // tri 2
-	//	2, 4, 5    // tri 3
-	//};
-
 	VertexBuffer[0].Pos = { 0.00, 100.00, 0.00 };   // top pole
-	VertexBuffer[1].Pos = { 70.71, 70.71, 0.00 };   // ring 1, seg 0
-	VertexBuffer[2].Pos = { 35.36, 70.71, 61.24 };   // ring 1, seg 1
-	VertexBuffer[3].Pos = { -35.36, 70.71, 61.24 };   // ring 1, seg 2
-	VertexBuffer[4].Pos = { -70.71, 70.71, 0.00 };   // ring 1, seg 3
-	VertexBuffer[5].Pos = { -35.36, 70.71, -61.24 };   // ring 1, seg 4
-	VertexBuffer[6].Pos = { 35.36, 70.71, -61.24 };   // ring 1, seg 5
-	VertexBuffer[7].Pos = { 100.00, 0.00, 0.00 };   // ring 2, seg 0
-	VertexBuffer[8].Pos = { 50.00, 0.00, 86.60 };   // ring 2, seg 1
-	VertexBuffer[9].Pos = { -50.00, 0.00, 86.60 };   // ring 2, seg 2
-	VertexBuffer[10].Pos = { -100.00, 0.00, 0.00 };   // ring 2, seg 3
-	VertexBuffer[11].Pos = { -50.00, 0.00, -86.60 };   // ring 2, seg 4
-	VertexBuffer[12].Pos = { 50.00, 0.00, -86.60 };   // ring 2, seg 5
-	VertexBuffer[13].Pos = { 70.71, -70.71, 0.00 };   // ring 3, seg 0
-	VertexBuffer[14].Pos = { 35.36, -70.71, 61.24 };   // ring 3, seg 1
-	VertexBuffer[15].Pos = { -35.36, -70.71, 61.24 };   // ring 3, seg 2
-	VertexBuffer[16].Pos = { -70.71, -70.71, 0.00 };   // ring 3, seg 3
-	VertexBuffer[17].Pos = { -35.36, -70.71, -61.24 };   // ring 3, seg 4
-	VertexBuffer[18].Pos = { 35.36, -70.71, -61.24 };   // ring 3, seg 5
-	VertexBuffer[19].Pos = { 0.00, -100.00, 0.00 };   // bottom pole
+	VertexBuffer[1].Pos = { 50.00, 86.60, 0.00 };   // ring 1, seg 0
+	VertexBuffer[2].Pos = { 35.36, 86.60, 35.36 };   // ring 1, seg 1
+	VertexBuffer[3].Pos = { 0.00, 86.60, 50.00 };   // ring 1, seg 2
+	VertexBuffer[4].Pos = { -35.36, 86.60, 35.36 };   // ring 1, seg 3
+	VertexBuffer[5].Pos = { -50.00, 86.60, 0.00 };   // ring 1, seg 4
+	VertexBuffer[6].Pos = { -35.36, 86.60, -35.36 };   // ring 1, seg 5
+	VertexBuffer[7].Pos = { 0.00, 86.60, -50.00 };   // ring 1, seg 6
+	VertexBuffer[8].Pos = { 35.36, 86.60, -35.36 };   // ring 1, seg 7
+	VertexBuffer[9].Pos = { 86.60, 50.00, 0.00 };   // ring 2, seg 0
+	VertexBuffer[10].Pos = { 61.24, 50.00, 61.24 };   // ring 2, seg 1
+	VertexBuffer[11].Pos = { 0.00, 50.00, 86.60 };   // ring 2, seg 2
+	VertexBuffer[12].Pos = { -61.24, 50.00, 61.24 };   // ring 2, seg 3
+	VertexBuffer[13].Pos = { -86.60, 50.00, 0.00 };   // ring 2, seg 4
+	VertexBuffer[14].Pos = { -61.24, 50.00, -61.24 };   // ring 2, seg 5
+	VertexBuffer[15].Pos = { 0.00, 50.00, -86.60 };   // ring 2, seg 6
+	VertexBuffer[16].Pos = { 61.24, 50.00, -61.24 };   // ring 2, seg 7
+	VertexBuffer[17].Pos = { 100.00, 0.00, 0.00 };   // ring 3, seg 0
+	VertexBuffer[18].Pos = { 70.71, 0.00, 70.71 };   // ring 3, seg 1
+	VertexBuffer[19].Pos = { 0.00, 0.00, 100.00 };   // ring 3, seg 2
+	VertexBuffer[20].Pos = { -70.71, 0.00, 70.71 };   // ring 3, seg 3
+	VertexBuffer[21].Pos = { -100.00, 0.00, 0.00 };   // ring 3, seg 4
+	VertexBuffer[22].Pos = { -70.71, 0.00, -70.71 };   // ring 3, seg 5
+	VertexBuffer[23].Pos = { 0.00, 0.00, -100.00 };   // ring 3, seg 6
+	VertexBuffer[24].Pos = { 70.71, 0.00, -70.71 };   // ring 3, seg 7
+	VertexBuffer[25].Pos = { 86.60, -50.00, 0.00 };   // ring 4, seg 0
+	VertexBuffer[26].Pos = { 61.24, -50.00, 61.24 };   // ring 4, seg 1
+	VertexBuffer[27].Pos = { 0.00, -50.00, 86.60 };   // ring 4, seg 2
+	VertexBuffer[28].Pos = { -61.24, -50.00, 61.24 };   // ring 4, seg 3
+	VertexBuffer[29].Pos = { -86.60, -50.00, 0.00 };   // ring 4, seg 4
+	VertexBuffer[30].Pos = { -61.24, -50.00, -61.24 };   // ring 4, seg 5
+	VertexBuffer[31].Pos = { 0.00, -50.00, -86.60 };   // ring 4, seg 6
+	VertexBuffer[32].Pos = { 61.24, -50.00, -61.24 };   // ring 4, seg 7
+	VertexBuffer[33].Pos = { 50.00, -86.60, 0.00 };   // ring 5, seg 0
+	VertexBuffer[34].Pos = { 35.36, -86.60, 35.36 };   // ring 5, seg 1
+	VertexBuffer[35].Pos = { 0.00, -86.60, 50.00 };   // ring 5, seg 2
+	VertexBuffer[36].Pos = { -35.36, -86.60, 35.36 };   // ring 5, seg 3
+	VertexBuffer[37].Pos = { -50.00, -86.60, 0.00 };   // ring 5, seg 4
+	VertexBuffer[38].Pos = { -35.36, -86.60, -35.36 };   // ring 5, seg 5
+	VertexBuffer[39].Pos = { 0.00, -86.60, -50.00 };   // ring 5, seg 6
+	VertexBuffer[40].Pos = { 35.36, -86.60, -35.36 };   // ring 5, seg 7
+	VertexBuffer[41].Pos = { 0.00, -100.00, 0.00 };   // bottom pole
 
 	IndexBuffer = {
 		// top cap
@@ -121,63 +118,103 @@ int main(int argc, char* argv[])
 		0, 4, 3,
 		0, 5, 4,
 		0, 6, 5,
-		0, 1, 6,
+		0, 7, 6,
+		0, 8, 7,
+		0, 1, 8,
 		// band ring1 -> ring2
-		1, 8, 7,
-		1, 2, 8,
-		2, 9, 8,
-		2, 3, 9,
-		3, 10, 9,
-		3, 4, 10,
-		4, 11, 10,
-		4, 5, 11,
-		5, 12, 11,
-		5, 6, 12,
-		6, 7, 12,
-		6, 1, 7,
+		1, 10, 9,
+		1, 2, 10,
+		2, 11, 10,
+		2, 3, 11,
+		3, 12, 11,
+		3, 4, 12,
+		4, 13, 12,
+		4, 5, 13,
+		5, 14, 13,
+		5, 6, 14,
+		6, 15, 14,
+		6, 7, 15,
+		7, 16, 15,
+		7, 8, 16,
+		8, 9, 16,
+		8, 1, 9,
 		// band ring2 -> ring3
-		7, 14, 13,
-		7, 8, 14,
-		8, 15, 14,
-		8, 9, 15,
-		9, 16, 15,
-		9, 10, 16,
-		10, 17, 16,
-		10, 11, 17,
-		11, 18, 17,
-		11, 12, 18,
-		12, 13, 18,
-		12, 7, 13,
+		9, 18, 17,
+		9, 10, 18,
+		10, 19, 18,
+		10, 11, 19,
+		11, 20, 19,
+		11, 12, 20,
+		12, 21, 20,
+		12, 13, 21,
+		13, 22, 21,
+		13, 14, 22,
+		14, 23, 22,
+		14, 15, 23,
+		15, 24, 23,
+		15, 16, 24,
+		16, 17, 24,
+		16, 9, 17,
+		// band ring3 -> ring4
+		17, 26, 25,
+		17, 18, 26,
+		18, 27, 26,
+		18, 19, 27,
+		19, 28, 27,
+		19, 20, 28,
+		20, 29, 28,
+		20, 21, 29,
+		21, 30, 29,
+		21, 22, 30,
+		22, 31, 30,
+		22, 23, 31,
+		23, 32, 31,
+		23, 24, 32,
+		24, 25, 32,
+		24, 17, 25,
+		// band ring4 -> ring5
+		25, 34, 33,
+		25, 26, 34,
+		26, 35, 34,
+		26, 27, 35,
+		27, 36, 35,
+		27, 28, 36,
+		28, 37, 36,
+		28, 29, 37,
+		29, 38, 37,
+		29, 30, 38,
+		30, 39, 38,
+		30, 31, 39,
+		31, 40, 39,
+		31, 32, 40,
+		32, 33, 40,
+		32, 25, 33,
 		// bottom cap
-		19, 13, 14,
-		19, 14, 15,
-		19, 15, 16,
-		19, 16, 17,
-		19, 17, 18,
-		19, 18, 13,
+		41, 33, 34,
+		41, 34, 35,
+		41, 35, 36,
+		41, 36, 37,
+		41, 37, 38,
+		41, 38, 39,
+		41, 39, 40,
+		41, 40, 33,
 	};
 
 	std::vector<Vertex> VertexBufferOriginal = VertexBuffer;
-
 	
-
 	Vec3 Translation = { 400, 300, 300 };
-	Vec3	   Angle = { 18, 14, 14 };
-	Vec3	   Scale = { 1, 1, 1 };
-	
+	Vec3	   Scale = { 1.3, 1.3, 1.3 };
+	Vec3	   Angle = { 0, 0, 0 };
+
 	ModelTransform(VertexBuffer, Translation, Angle, Scale);
-	
-	camera.AT = VertexBuffer[0].Pos;
+
+	camera.AT = Translation;
 	camera.EYE = { 400, 100, 30 };
 	camera.UP = { 170, 150, 20 };
 
 	camera.n = normal(camera.AT - camera.EYE);
-
-	camera.u = cross(camera.UP, camera.n);
-	camera.u = normal(camera.u);
-
-	camera.v = cross(camera.n, camera.u);
-	camera.v = normal(camera.v);
+	camera.u = normal(cross(camera.UP, camera.n));
+	camera.v = normal(cross(camera.n, camera.u));
 
 	ViewTransform(VertexBuffer, camera);
 
