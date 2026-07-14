@@ -9,29 +9,109 @@
 
 #include				 <algorithm>
 #include				 <SDL3/SDL.h>
+
 #include				"Math/Math.h"
 #include	  "Bresenhem/Bresenhem.h"
 #include  "Barycentric/Barycentric.h"
 #include			"Camera/Camera.h"
 #include	 "Vertex/VertexShading.h"
 
-// ASPECT = HEIGHT(600) / WIDTH(800) = 3/4
+// ASPECT = HEIGHT(600) / WIDTH(800) = 4/3
 
 constexpr float ASPECT = (float)WIDTH / (float)HEIGHT;
 
 float fovy = 60 * (PI / 180.0f);
 float fovx = 2 * atan(ASPECT * tan(fovy / 2));
 
+void GenerateUVSphere(int rings, int segments, float radius,
+	std::vector<Vertex>& vbuf, std::vector<uint32_t>& ibuf)
+{
+	vbuf.clear();
+	ibuf.clear();
+	vbuf.reserve(2 + rings * segments);
+	ibuf.reserve(3 * (2 * segments + 2 * (rings - 1) * segments));
+
+	auto colorFromNormal = [](float nx, float ny, float nz) -> Color {
+		// 법선 방향 [-1,1] → [28, 228] 매핑: 부드러운 위치 기반 그라디언트
+		auto ch = [](float n) { return (uint8_t)(128.0f + 100.0f * n + 0.5f); };
+		return { ch(nx), ch(ny), ch(nz), 255 };
+		};
+
+	// top pole
+	Vertex v;
+	v.Pos = { 0.0f, radius, 0.0f };
+	v.Color = colorFromNormal(0.0f, 1.0f, 0.0f);
+	vbuf.push_back(v);
+
+	// rings
+	for (int r = 1; r <= rings; r++)
+	{
+		float theta = PI * (float)r / (float)(rings + 1);
+		float y = cosf(theta);
+		float rr = sinf(theta);
+
+		for (int s = 0; s < segments; s++)
+		{
+			float phi = 2.0f * PI * (float)s / (float)segments;
+			float nx = rr * cosf(phi);
+			float nz = rr * sinf(phi);
+			v.Pos = { radius * nx, radius * y, radius * nz };
+			v.Color = colorFromNormal(nx, y, nz);
+			vbuf.push_back(v);
+		}
+	}
+
+	// bottom pole
+	v.Pos = { 0.0f, -radius, 0.0f };
+	v.Color = colorFromNormal(0.0f, -1.0f, 0.0f);
+	vbuf.push_back(v);
+
+	uint32_t bottomPole = (uint32_t)(1 + rings * segments);
+
+	// top cap: (pole, s+1, s)
+	for (int s = 0; s < segments; s++)
+	{
+		uint32_t a = 1 + s;
+		uint32_t b = 1 + (s + 1) % segments;
+		ibuf.insert(ibuf.end(), { 0u, b, a });
+	}
+
+	// bands: (a_s, b_{s+1}, b_s), (a_s, a_{s+1}, b_{s+1})
+	for (int r = 0; r < rings - 1; r++)
+	{
+		uint32_t baseA = 1 + r * segments;
+		uint32_t baseB = 1 + (r + 1) * segments;
+		for (int s = 0; s < segments; s++)
+		{
+			uint32_t a0 = baseA + s;
+			uint32_t a1 = baseA + (s + 1) % segments;
+			uint32_t b0 = baseB + s;
+			uint32_t b1 = baseB + (s + 1) % segments;
+			ibuf.insert(ibuf.end(), { a0, b1, b0 });
+			ibuf.insert(ibuf.end(), { a0, a1, b1 });
+		}
+	}
+
+	// bottom cap: (pole, s, s+1)
+	{
+		uint32_t baseA = 1 + (rings - 1) * segments;
+		for (int s = 0; s < segments; s++)
+		{
+			uint32_t a0 = baseA + s;
+			uint32_t a1 = baseA + (s + 1) % segments;
+			ibuf.insert(ibuf.end(), { bottomPole, a0, a1 });
+		}
+	}
+}
+
 int main(int argc, char* argv[])
 {
 	std::vector<Color>			Framebuffer(WIDTH * HEIGHT);
-	std::vector<float>			ZBuffer	   (WIDTH * HEIGHT);
-	
-	
-	int VertexCount = 42;
-	int TriangleCount = 80;
-	std::vector<Vertex>			VertexBuffer(VertexCount);
-	std::vector<uint32_t>		IndexBuffer (TriangleCount);
+	std::vector<float>			ZBuffer(WIDTH * HEIGHT, 1.0f);
+	std::vector<Vertex>			VertexBuffer;
+	std::vector<uint32_t>		IndexBuffer;
+
+	GenerateUVSphere(23, 32, 70.0f, VertexBuffer, IndexBuffer);
 
 	if (!SDL_Init(SDL_INIT_VIDEO))
 	{
@@ -60,170 +140,28 @@ int main(int argc, char* argv[])
 	
 	SDL_Texture* texture = SDL_CreateTexture(
 		renderer,
-		SDL_PIXELFORMAT_RGBA8888,
+		SDL_PIXELFORMAT_RGBA32,
 		SDL_TEXTUREACCESS_STREAMING,
 		WIDTH, HEIGHT
 	);
 
-
 	Camera camera;
-
-	VertexBuffer[0].Pos = { 0.00, 100.00, 0.00 };   // top pole
-	VertexBuffer[1].Pos = { 50.00, 86.60, 0.00 };   // ring 1, seg 0
-	VertexBuffer[2].Pos = { 35.36, 86.60, 35.36 };   // ring 1, seg 1
-	VertexBuffer[3].Pos = { 0.00, 86.60, 50.00 };   // ring 1, seg 2
-	VertexBuffer[4].Pos = { -35.36, 86.60, 35.36 };   // ring 1, seg 3
-	VertexBuffer[5].Pos = { -50.00, 86.60, 0.00 };   // ring 1, seg 4
-	VertexBuffer[6].Pos = { -35.36, 86.60, -35.36 };   // ring 1, seg 5
-	VertexBuffer[7].Pos = { 0.00, 86.60, -50.00 };   // ring 1, seg 6
-	VertexBuffer[8].Pos = { 35.36, 86.60, -35.36 };   // ring 1, seg 7
-	VertexBuffer[9].Pos = { 86.60, 50.00, 0.00 };   // ring 2, seg 0
-	VertexBuffer[10].Pos = { 61.24, 50.00, 61.24 };   // ring 2, seg 1
-	VertexBuffer[11].Pos = { 0.00, 50.00, 86.60 };   // ring 2, seg 2
-	VertexBuffer[12].Pos = { -61.24, 50.00, 61.24 };   // ring 2, seg 3
-	VertexBuffer[13].Pos = { -86.60, 50.00, 0.00 };   // ring 2, seg 4
-	VertexBuffer[14].Pos = { -61.24, 50.00, -61.24 };   // ring 2, seg 5
-	VertexBuffer[15].Pos = { 0.00, 50.00, -86.60 };   // ring 2, seg 6
-	VertexBuffer[16].Pos = { 61.24, 50.00, -61.24 };   // ring 2, seg 7
-	VertexBuffer[17].Pos = { 100.00, 0.00, 0.00 };   // ring 3, seg 0
-	VertexBuffer[18].Pos = { 70.71, 0.00, 70.71 };   // ring 3, seg 1
-	VertexBuffer[19].Pos = { 0.00, 0.00, 100.00 };   // ring 3, seg 2
-	VertexBuffer[20].Pos = { -70.71, 0.00, 70.71 };   // ring 3, seg 3
-	VertexBuffer[21].Pos = { -100.00, 0.00, 0.00 };   // ring 3, seg 4
-	VertexBuffer[22].Pos = { -70.71, 0.00, -70.71 };   // ring 3, seg 5
-	VertexBuffer[23].Pos = { 0.00, 0.00, -100.00 };   // ring 3, seg 6
-	VertexBuffer[24].Pos = { 70.71, 0.00, -70.71 };   // ring 3, seg 7
-	VertexBuffer[25].Pos = { 86.60, -50.00, 0.00 };   // ring 4, seg 0
-	VertexBuffer[26].Pos = { 61.24, -50.00, 61.24 };   // ring 4, seg 1
-	VertexBuffer[27].Pos = { 0.00, -50.00, 86.60 };   // ring 4, seg 2
-	VertexBuffer[28].Pos = { -61.24, -50.00, 61.24 };   // ring 4, seg 3
-	VertexBuffer[29].Pos = { -86.60, -50.00, 0.00 };   // ring 4, seg 4
-	VertexBuffer[30].Pos = { -61.24, -50.00, -61.24 };   // ring 4, seg 5
-	VertexBuffer[31].Pos = { 0.00, -50.00, -86.60 };   // ring 4, seg 6
-	VertexBuffer[32].Pos = { 61.24, -50.00, -61.24 };   // ring 4, seg 7
-	VertexBuffer[33].Pos = { 50.00, -86.60, 0.00 };   // ring 5, seg 0
-	VertexBuffer[34].Pos = { 35.36, -86.60, 35.36 };   // ring 5, seg 1
-	VertexBuffer[35].Pos = { 0.00, -86.60, 50.00 };   // ring 5, seg 2
-	VertexBuffer[36].Pos = { -35.36, -86.60, 35.36 };   // ring 5, seg 3
-	VertexBuffer[37].Pos = { -50.00, -86.60, 0.00 };   // ring 5, seg 4
-	VertexBuffer[38].Pos = { -35.36, -86.60, -35.36 };   // ring 5, seg 5
-	VertexBuffer[39].Pos = { 0.00, -86.60, -50.00 };   // ring 5, seg 6
-	VertexBuffer[40].Pos = { 35.36, -86.60, -35.36 };   // ring 5, seg 7
-	VertexBuffer[41].Pos = { 0.00, -100.00, 0.00 };   // bottom pole
-
-	IndexBuffer = {
-		// top cap
-		0, 2, 1,
-		0, 3, 2,
-		0, 4, 3,
-		0, 5, 4,
-		0, 6, 5,
-		0, 7, 6,
-		0, 8, 7,
-		0, 1, 8,
-		// band ring1 -> ring2
-		1, 10, 9,
-		1, 2, 10,
-		2, 11, 10,
-		2, 3, 11,
-		3, 12, 11,
-		3, 4, 12,
-		4, 13, 12,
-		4, 5, 13,
-		5, 14, 13,
-		5, 6, 14,
-		6, 15, 14,
-		6, 7, 15,
-		7, 16, 15,
-		7, 8, 16,
-		8, 9, 16,
-		8, 1, 9,
-		// band ring2 -> ring3
-		9, 18, 17,
-		9, 10, 18,
-		10, 19, 18,
-		10, 11, 19,
-		11, 20, 19,
-		11, 12, 20,
-		12, 21, 20,
-		12, 13, 21,
-		13, 22, 21,
-		13, 14, 22,
-		14, 23, 22,
-		14, 15, 23,
-		15, 24, 23,
-		15, 16, 24,
-		16, 17, 24,
-		16, 9, 17,
-		// band ring3 -> ring4
-		17, 26, 25,
-		17, 18, 26,
-		18, 27, 26,
-		18, 19, 27,
-		19, 28, 27,
-		19, 20, 28,
-		20, 29, 28,
-		20, 21, 29,
-		21, 30, 29,
-		21, 22, 30,
-		22, 31, 30,
-		22, 23, 31,
-		23, 32, 31,
-		23, 24, 32,
-		24, 25, 32,
-		24, 17, 25,
-		// band ring4 -> ring5
-		25, 34, 33,
-		25, 26, 34,
-		26, 35, 34,
-		26, 27, 35,
-		27, 36, 35,
-		27, 28, 36,
-		28, 37, 36,
-		28, 29, 37,
-		29, 38, 37,
-		29, 30, 38,
-		30, 39, 38,
-		30, 31, 39,
-		31, 40, 39,
-		31, 32, 40,
-		32, 33, 40,
-		32, 25, 33,
-		// bottom cap
-		41, 33, 34,
-		41, 34, 35,
-		41, 35, 36,
-		41, 36, 37,
-		41, 37, 38,
-		41, 38, 39,
-		41, 39, 40,
-		41, 40, 33,
-	};
-
 	std::vector<Vertex> VertexBufferOriginal = VertexBuffer;
-	
-	Vec3 Translation = { 400, 300, 300 };
-	Vec3	   Scale = { 1.3, 1.3, 1.3 };
-	Vec3	   Angle = { 0, 0, 0 };
 
-	ModelTransform(VertexBuffer, Translation, Angle, Scale);
+	Vec3 Translation = { 400, 300, 300 };
+	Vec3       Scale = { 1.3, 1.3, 1.3 };
+	const float RotationSpeedDegPerSec = 45.0f;
 
 	camera.AT = Translation;
 	camera.EYE = { 400, 100, 30 };
-	camera.UP = { 170, 150, 20 };
+	camera.UP = { 0, 1, 0 };
 
 	camera.n = normal(camera.AT - camera.EYE);
 	camera.u = normal(cross(camera.UP, camera.n));
 	camera.v = normal(cross(camera.n, camera.u));
 
-	ViewTransform(VertexBuffer, camera);
+	Uint64 startTicks = SDL_GetTicks();
 
-	PerspectiveProjection(VertexBuffer, fovy, ASPECT);
-
-	ViewPortTransfrom(VertexBuffer, WIDTH, HEIGHT);
-
-	Draw(VertexBuffer, IndexBuffer, Framebuffer);
-	
 
 	bool running = true;
 	SDL_Event event;
@@ -236,6 +174,24 @@ int main(int argc, char* argv[])
 				running = false;
         }
 		
+		Uint64 nowTicks = SDL_GetTicks();
+		float elapsedSec = (nowTicks - startTicks) / 1000.0f;
+		Vec3 Angle = {
+			fmodf(elapsedSec * 30.0f,  360.0f),   // x
+			fmodf(elapsedSec * 45.0f,  360.0f),   // y
+			0.0f   // z
+		};
+
+		std::fill(Framebuffer.begin(), Framebuffer.end(), Color{});
+		std::fill(ZBuffer.begin(), ZBuffer.end(), 1.0f);
+
+		VertexBuffer = VertexBufferOriginal;
+		ModelTransform(VertexBuffer, Translation, Angle, Scale);
+		ViewTransform(VertexBuffer, camera);
+		PerspectiveProjection(VertexBuffer, fovy, ASPECT);
+		ViewPortTransfrom(VertexBuffer, WIDTH, HEIGHT);
+		Draw(VertexBuffer, IndexBuffer, Framebuffer, ZBuffer);
+
 		SDL_RenderClear(renderer);
 		SDL_UpdateTexture(texture, nullptr, Framebuffer.data(), WIDTH * sizeof(Color));
 		SDL_RenderTexture(renderer, texture, nullptr, nullptr);

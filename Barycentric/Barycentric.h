@@ -1,7 +1,7 @@
 /*
 	FILE: Barycentric.h
 
-	CONTENTS : BoundingBox struct, EdgeEquation(), ComputeBoundingBox(), DepthTest() and more
+	CONTENTS : BoundingBox struct, EdgeEquation(), ComputeBoundingBox() and RasterizeTriangle()
 */
 
 #pragma once
@@ -20,10 +20,11 @@ float EdgeEquation(const Vec3& P, const Vec3& v1, const Vec3& v2);
 // Create bounding box
 BoundingBox ComputeBoundingBox(const Vec3& v1, const Vec3& v2, const Vec3& v3);
 
+// Rasterize Triangle. First check object's every triangles' bounding box.
 void RasterizeTriangle(
-	const Vec3& v1, const Vec3& v2, const Vec3& v3,
+	const Vertex& v1, const Vertex& v2, const Vertex& v3,
 	const BoundingBox& Bbox,
 	std::vector<Color>& FrameBuffer,
 	std::vector<float>& ZBuffer,
-	int Width
+	int Width, int Height
 );

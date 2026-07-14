@@ -109,7 +109,7 @@ void OrthographicProjection(std::vector<Vertex>& vBufferIn)
 
 void PerspectiveProjection(std::vector<Vertex>& vBufferIn, float fovy, float ASPECT)
 {
-	Mat4 ProjM;
+	Mat4 ProjM;		
 	float cot = 1 / tan(fovy / 2);
 	float f, n;
 	f = 1500.0f; n = 1.0f;

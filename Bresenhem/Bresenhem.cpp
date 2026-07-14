@@ -1,4 +1,5 @@
-#include "Bresenhem.h"
+﻿#include "Bresenhem.h"
+#include "Barycentric/Barycentric.h"
 
 void Bresenhem(int x0, int y0, int x1, int y1, std::vector<Color>& dest)
 {
@@ -70,15 +71,16 @@ void Bresenhem(int x0, int y0, int x1, int y1, std::vector<Color>& dest)
 //}
 // 
 
-bool isBackFace(const Vec3& v1, const Vec3& v2, const Vec3& v3)
+bool isBackFace(const Vec4& v1, const Vec4& v2, const Vec4& v3)
 {
-    float det = (v2.v[0] - v1.v[0]) * (v3.v[1] - v1.v[1]) - (v2.v[1] - v1.v[1]) * (v3.v[0] - v1.v[0]);
+    float det = (v2.v[0] - v1.v[0]) * (v3.v[1] - v1.v[1])
+              - (v2.v[1] - v1.v[1]) * (v3.v[0] - v1.v[0]);
 
-    return (det > 0.0f);
+    return (det < 0.0f);
 }
 
 // Draws triangle
-void Draw(std::vector<Vertex>& vbuffer, std::vector<uint32_t>& ibuffer, std::vector<Color>& fbuffer) 
+void Draw(std::vector<Vertex>& vbuffer, std::vector<uint32_t>& ibuffer, std::vector<Color>& fbuffer)
 {
     // ClearFrame(fbuffer);
     
@@ -98,6 +100,35 @@ void Draw(std::vector<Vertex>& vbuffer, std::vector<uint32_t>& ibuffer, std::vec
         Bresenhem(vbuffer[i1].Pos.v[0], vbuffer[i1].Pos.v[1], vbuffer[i2].Pos.v[0], vbuffer[i2].Pos.v[1], fbuffer);
         Bresenhem(vbuffer[i2].Pos.v[0], vbuffer[i2].Pos.v[1], vbuffer[i0].Pos.v[0], vbuffer[i0].Pos.v[1], fbuffer);
 
-        // z-test?
+        //    // z-test?
+
     }
+}
+
+void Draw(std::vector<Vertex>& vbuffer, std::vector<uint32_t>& ibuffer, std::vector<Color>& fbuffer, std::vector<float>& zbuffer)
+{
+    int triangleCount = (int)ibuffer.size() / 3;
+
+    for (int t = 0; t < triangleCount; t++)
+    {
+        uint32_t i0 = ibuffer[3 * t + 0];
+        uint32_t i1 = ibuffer[3 * t + 1];
+        uint32_t i2 = ibuffer[3 * t + 2];
+
+        const Vertex& a = vbuffer[i0];
+        const Vertex& b = vbuffer[i1];
+        const Vertex& c = vbuffer[i2];
+
+        if (isBackFace(a.Pos, b.Pos, c.Pos))
+            continue;
+
+        BoundingBox bbox = ComputeBoundingBox(a.Pos, b.Pos, c.Pos);
+       
+        RasterizeTriangle(a, b, c, bbox, fbuffer, zbuffer, WIDTH, HEIGHT);
+        /*Bresenhem(vbuffer[i0].Pos.v[0], vbuffer[i0].Pos.v[1], vbuffer[i1].Pos.v[0], vbuffer[i1].Pos.v[1], fbuffer);
+        Bresenhem(vbuffer[i1].Pos.v[0], vbuffer[i1].Pos.v[1], vbuffer[i2].Pos.v[0], vbuffer[i2].Pos.v[1], fbuffer);
+        Bresenhem(vbuffer[i2].Pos.v[0], vbuffer[i2].Pos.v[1], vbuffer[i0].Pos.v[0], vbuffer[i0].Pos.v[1], fbuffer);
+    */
+    }
+
 }

@@ -13,3 +13,4 @@ bool isBackFace(const Vec4& v1, const Vec4& v2, const Vec4& v3);
 
 
 void Draw(std::vector<Vertex>& vbuffer, std::vector<uint32_t>& ibuffer, std::vector<Color>& fbuffer);
+void Draw(std::vector<Vertex>& vbuffer, std::vector<uint32_t>& ibuffer, std::vector<Color>& fbuffer, std::vector<float>& zbuffer);
