@@ -31,3 +31,12 @@
 ### 2. IA (Input Assembler) implementation
 1. **Hardcode vertecies first to test buffers are working**
 2. **Check if IA works `VertexBuffer`, `IndexBuffer`**
+
+---
+
+## July 14th, 2026
+
+### Image Texturing (UV interpolate and such)
+
+1. **Texture Coordinate(s,t) & Texel implement**
+2. **Research what parameterization is and figure out what kind of method is used**
