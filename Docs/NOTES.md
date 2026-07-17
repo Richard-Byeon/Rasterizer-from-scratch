@@ -62,3 +62,31 @@ $$
 **3. What is Projection?**
 
 -> MVP transform → Clipping → Perspective divide → Viewport / Screen Mapping
+
+## July 17th, 2026
+
+### UV coordinate & interpolation & etc.
+
+1. **What is texel?** |  Texture element — a cell of the 2D texture array.
+   Contains only its integer index (i, j) and Color. Does NOT own (s, t);
+   texels are *referenced by* interpolated UVs, never the reverse (lookup
+   is one-directional: mesh -> texture)
+   
+   NOTE: TEXEL IS NOT CORRESPONDS TO PIXEL ONE TO ONE (IMPORTANT FOR PIXEL SAMPLING)
+3. **Flow of texture mapping** |
+   
+   (1) Modeling step: assign normalized (s, t) ∈ [0,1]² (parameter space)
+       to each VERTEX. UV is a per-vertex attribute, independent of any
+       specific texture/resolution.
+   
+   (2) Rasterization: interpolate (s, t) per fragment via barycentric
+       weights — same mechanism as Gouraud color interp (l1, l2, l3 in
+       RasterizeTriangle). Affine for now; perspective correction (1/w) later.
+   
+   (3) Sampling: scale to texel space — (s', t') = (s, t) · (width_tex, height_tex).
+       s pairs with WIDTH, t with HEIGHT (order matters for non-square textures).
+   
+   (4) Filtering: discretize continuous (s', t') to texel index
+       (nearest / bilinear).
+       Texel center convention : (i + 0.5, j + 0.5)
+   
