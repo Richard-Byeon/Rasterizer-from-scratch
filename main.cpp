@@ -3,8 +3,8 @@
 
 			FILE: main.cpp (temporary name)
 	
-			LAST UPDATE: 8th, JULY, 2026
-			LAST MODIFIED FEATURE: VIEWPORT TRANSFORM & PERSPECTIVE DIVISION & W GUARD
+			LAST UPDATE: 26th, JULY, 2026
+			LAST MODIFIED FEATURE: GenerateUVSphere() modifeded, UV coordinate configuration underway
 */
 
 #include				 <algorithm>
