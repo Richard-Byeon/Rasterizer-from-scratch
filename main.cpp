@@ -15,7 +15,7 @@
 #include  "Barycentric/Barycentric.h"
 #include			"Camera/Camera.h"
 #include	 "Vertex/VertexShading.h"
-
+#include			"UV/Texturing.h"
 // ASPECT = HEIGHT(600) / WIDTH(800) = 4/3
 
 constexpr float ASPECT = (float)WIDTH / (float)HEIGHT;
@@ -23,85 +23,51 @@ constexpr float ASPECT = (float)WIDTH / (float)HEIGHT;
 float fovy = 60 * (PI / 180.0f);
 float fovx = 2 * atan(ASPECT * tan(fovy / 2));
 
-void GenerateUVSphere(int rings, int segments, float radius,
+void GenerateUVSphere(int stacks, int slices, float radius,
 	std::vector<Vertex>& vbuf, std::vector<uint32_t>& ibuf)
 {
 	vbuf.clear();
 	ibuf.clear();
-	vbuf.reserve(2 + rings * segments);
-	ibuf.reserve(3 * (2 * segments + 2 * (rings - 1) * segments));
+	vbuf.reserve((stacks + 1) * (slices + 1));
+	ibuf.reserve(3 * (2 * slices + 2 * (stacks - 1) * slices));
 
-	auto colorFromNormal = [](float nx, float ny, float nz) -> Color {
-		// 법선 방향 [-1,1] → [28, 228] 매핑: 부드러운 위치 기반 그라디언트
-		auto ch = [](float n) { return (uint8_t)(128.0f + 100.0f * n + 0.5f); };
-		return { ch(nx), ch(ny), ch(nz), 255 };
-		};
-
-	// top pole
+	////////////////////////
+	//	Vertex Allocate	 //
+	///////////////////////
 	Vertex v;
-	v.Pos = { 0.0f, radius, 0.0f };
-	v.Color = colorFromNormal(0.0f, 1.0f, 0.0f);
-	vbuf.push_back(v);
-
-	// rings
-	for (int r = 1; r <= rings; r++)
+	
+	for (int r = 0; r <= stacks; r++)
 	{
-		float theta = PI * (float)r / (float)(rings + 1);
-		float y = cosf(theta);
-		float rr = sinf(theta);
+		float phi = PI * (r / float(stacks));
+		// calculate which "floor" this circle will be located in.
+		float ny = cosf(phi);
+		// calculates radius of this floor's circle
+		float Radius = sinf(phi);
 
-		for (int s = 0; s < segments; s++)
+		for (int seg = 0; seg <= slices; seg++)
 		{
-			float phi = 2.0f * PI * (float)s / (float)segments;
-			float nx = rr * cosf(phi);
-			float nz = rr * sinf(phi);
-			v.Pos = { radius * nx, radius * y, radius * nz };
-			v.Color = colorFromNormal(nx, y, nz);
+			float theta = 2.0f * PI * (seg / (float)slices);
+			// normalized x coordinate
+			float nx = Radius * cosf(theta);
+			// normalized z coordinate
+			float nz = Radius * sinf(theta);
+			v.Pos = { radius * nx, radius * ny, radius * nz };
 			vbuf.push_back(v);
 		}
 	}
+	int vertexCount = vbuf.size();
 
-	// bottom pole
-	v.Pos = { 0.0f, -radius, 0.0f };
-	v.Color = colorFromNormal(0.0f, -1.0f, 0.0f);
-	vbuf.push_back(v);
+	SDL_Log("Vertex Count: %d", vertexCount);
 
-	uint32_t bottomPole = (uint32_t)(1 + rings * segments);
+	//////////////////////////////////////////////
 
-	// top cap: (pole, s+1, s)
-	for (int s = 0; s < segments; s++)
-	{
-		uint32_t a = 1 + s;
-		uint32_t b = 1 + (s + 1) % segments;
-		ibuf.insert(ibuf.end(), { 0u, b, a });
-	}
+	///////////////////////////////////////
+	//	Idx Allocate & Face Allocate	//
+	//////////////////////////////////////
 
-	// bands: (a_s, b_{s+1}, b_s), (a_s, a_{s+1}, b_{s+1})
-	for (int r = 0; r < rings - 1; r++)
-	{
-		uint32_t baseA = 1 + r * segments;
-		uint32_t baseB = 1 + (r + 1) * segments;
-		for (int s = 0; s < segments; s++)
-		{
-			uint32_t a0 = baseA + s;
-			uint32_t a1 = baseA + (s + 1) % segments;
-			uint32_t b0 = baseB + s;
-			uint32_t b1 = baseB + (s + 1) % segments;
-			ibuf.insert(ibuf.end(), { a0, b1, b0 });
-			ibuf.insert(ibuf.end(), { a0, a1, b1 });
-		}
-	}
+	// We'll be using quad since the vertices are allocated as a grid and then slice that quad into two trinagle.
 
-	// bottom cap: (pole, s, s+1)
-	{
-		uint32_t baseA = 1 + (rings - 1) * segments;
-		for (int s = 0; s < segments; s++)
-		{
-			uint32_t a0 = baseA + s;
-			uint32_t a1 = baseA + (s + 1) % segments;
-			ibuf.insert(ibuf.end(), { bottomPole, a0, a1 });
-		}
-	}
+
 }
 
 int main(int argc, char* argv[])
@@ -111,7 +77,7 @@ int main(int argc, char* argv[])
 	std::vector<Vertex>			VertexBuffer;
 	std::vector<uint32_t>		IndexBuffer;
 
-	GenerateUVSphere(23, 32, 70.0f, VertexBuffer, IndexBuffer);
+	GenerateUVSphere(5, 8, 70.0f, VertexBuffer, IndexBuffer);
 
 	if (!SDL_Init(SDL_INIT_VIDEO))
 	{

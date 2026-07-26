@@ -1,8 +1,8 @@
 #pragma once
 /*
 	FILE: Vertex.h
-
-
+	
+	Contains Struct Color, struct Vertex
 */
 
 #include <vector>

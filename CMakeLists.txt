@@ -11,6 +11,7 @@ add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
 # Create your game executable target as usual
 add_executable(RFS
     main.cpp
+    UV/Texturing.cpp
     Bresenhem/Bresenhem.cpp
     Math/Math.cpp
     Vertex/VertexShading.cpp
