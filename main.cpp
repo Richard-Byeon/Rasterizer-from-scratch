@@ -9,7 +9,7 @@
 
 #include				 <algorithm>
 #include				 <SDL3/SDL.h>
-
+#include				 <iostream>
 #include				"Math/Math.h"
 #include	  "Bresenhem/Bresenhem.h"
 #include  "Barycentric/Barycentric.h"
@@ -26,39 +26,52 @@ float fovx = 2 * atan(ASPECT * tan(fovy / 2));
 void GenerateUVSphere(int stacks, int slices, float radius,
 	std::vector<Vertex>& vbuf, std::vector<uint32_t>& ibuf)
 {
+	// Difference between AI made version and hand-made version: vertex/index allocating, UV coordinate
 	vbuf.clear();
 	ibuf.clear();
 	vbuf.reserve((stacks + 1) * (slices + 1));
-	ibuf.reserve(3 * (2 * slices + 2 * (stacks - 1) * slices));
+	ibuf.reserve(3 * 2 * stacks * slices);
 
-	////////////////////////
-	//	Vertex Allocate	 //
-	///////////////////////
-	Vertex v;
+	///////////////////////////
+	//	 Vertices Allocate	 //
+	///////////////////////////
+	Vertex vertex;
+	int ring, segment;
 	
-	for (int r = 0; r <= stacks; r++)
+
+	for (ring = 0; ring <= stacks; ring++)
 	{
-		float phi = PI * (r / float(stacks));
+		// r == 0 && r == stacks -> pole. (Has the same amount of vertex as slices)
+		float phi = PI * (ring / float(stacks));
 		// calculate which "floor" this circle will be located in.
 		float ny = cosf(phi);
 		// calculates radius of this floor's circle
 		float Radius = sinf(phi);
 
-		for (int seg = 0; seg <= slices; seg++)
+		for (segment = 0; segment <= slices; segment++)
 		{
-			float theta = 2.0f * PI * (seg / (float)slices);
+			float theta = 2.0f * PI * (segment / (float)slices);
 			// normalized x coordinate
 			float nx = Radius * cosf(theta);
 			// normalized z coordinate
 			float nz = Radius * sinf(theta);
-			v.Pos = { radius * nx, radius * ny, radius * nz };
-			vbuf.push_back(v);
+			vertex.Pos = { radius * nx, radius * ny, radius * nz };
+			vertex.Normal = { nx, ny, nz };
+			vertex.UV = { segment / (float)slices, ring / (float)stacks };
+
+			auto ch = [](float n) { return (uint8_t)(128.0f + 100.0f * n + 0.5f); }; // normal color lambda func. Made by AI.
+			float u = vertex.UV.v[0], v = vertex.UV.v[1];
+			vertex.Color = { (uint8_t)(u * 255), (uint8_t)(v * 255), 0,  255};
+			vbuf.push_back(vertex);
 		}
 	}
-	int vertexCount = vbuf.size();
 
-	SDL_Log("Vertex Count: %d", vertexCount);
+	/*int vertexCount = vbuf.size();
 
+	for (int i = 0; i < vertexCount ; i++)
+	{
+		std::cout << "Vertex.pos" << i << ": " << vbuf[i].Pos.v[0] << " " << vbuf[i].Pos.v[1] << " " << vbuf[i].Pos.v[2] << "\n";
+	}*/
 	//////////////////////////////////////////////
 
 	///////////////////////////////////////
@@ -66,18 +79,47 @@ void GenerateUVSphere(int stacks, int slices, float radius,
 	//////////////////////////////////////
 
 	// We'll be using quad since the vertices are allocated as a grid and then slice that quad into two trinagle.
+	//  
 
+	for (ring = 0; ring < stacks; ring++)
+	{
+		for (segment = 0; segment < slices; segment++)
+		{
+			/*
+									 seg	 seg + 1
+									  |			|
+						ring	 ---- a ------- b   
+									  |			|
+						ring + 1 ---- c ------- d
+			*/
 
+			uint32_t a, b, c, d;
+
+			a = ring * (slices + 1) + segment;
+			b = a + 1;
+			c = a + (slices + 1);
+			d = c + 1;
+			ibuf.push_back(a); ibuf.push_back(c); ibuf.push_back(d);
+			ibuf.push_back(a); ibuf.push_back(d); ibuf.push_back(b);
+
+		}
+	}
+
+	/*int idxcount = ibuf.size();
+	for (int i = 0; i < idxcount / 3; i++)
+	{
+		std::cout << "face" << i << ": " << ibuf[3 * i] << " " << ibuf[3*i + 1] << " " << ibuf[3*i + 2]<< "\n";
+	}*/
 }
 
 int main(int argc, char* argv[])
 {
 	std::vector<Color>			Framebuffer(WIDTH * HEIGHT);
-	std::vector<float>			ZBuffer(WIDTH * HEIGHT, 1.0f);
+	std::vector<float>			ZBuffer(WIDTH * HEIGHT, 1.0f); // init Zbuffer as 1.0f (far)
 	std::vector<Vertex>			VertexBuffer;
 	std::vector<uint32_t>		IndexBuffer;
 
-	GenerateUVSphere(5, 8, 70.0f, VertexBuffer, IndexBuffer);
+	GenerateUVSphere(12, 16, 70.0f, VertexBuffer, IndexBuffer);
 
 	if (!SDL_Init(SDL_INIT_VIDEO))
 	{
@@ -162,6 +204,7 @@ int main(int argc, char* argv[])
 		SDL_UpdateTexture(texture, nullptr, Framebuffer.data(), WIDTH * sizeof(Color));
 		SDL_RenderTexture(renderer, texture, nullptr, nullptr);
 		SDL_RenderPresent(renderer);
+
     }
 
     SDL_DestroyRenderer(renderer);
