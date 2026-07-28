@@ -1,5 +1,12 @@
-﻿#include "Bresenhem.h"
-#include "Barycentric/Barycentric.h"
+﻿/*
+    FILE: Bresnehem.cpp
+
+    LAST MODIFIDED: 
+
+*/
+
+#include "Bresenhem.h"
+#include "Rasterizer/Rasterizer.h"
 
 void Bresenhem(int x0, int y0, int x1, int y1, std::vector<Color>& dest)
 {
@@ -76,7 +83,7 @@ bool isBackFace(const Vec4& v1, const Vec4& v2, const Vec4& v3)
     float det = (v2.v[0] - v1.v[0]) * (v3.v[1] - v1.v[1])
               - (v2.v[1] - v1.v[1]) * (v3.v[0] - v1.v[0]);
 
-    return (det < 0.0f);
+    return (det > 0.0f);
 }
 
 // Draws triangle
@@ -127,8 +134,8 @@ void Draw(std::vector<Vertex>& vbuffer, std::vector<uint32_t>& ibuffer, std::vec
         RasterizeTriangle(a, b, c, bbox, fbuffer, zbuffer, WIDTH, HEIGHT);
         /*Bresenhem(vbuffer[i0].Pos.v[0], vbuffer[i0].Pos.v[1], vbuffer[i1].Pos.v[0], vbuffer[i1].Pos.v[1], fbuffer);
         Bresenhem(vbuffer[i1].Pos.v[0], vbuffer[i1].Pos.v[1], vbuffer[i2].Pos.v[0], vbuffer[i2].Pos.v[1], fbuffer);
-        Bresenhem(vbuffer[i2].Pos.v[0], vbuffer[i2].Pos.v[1], vbuffer[i0].Pos.v[0], vbuffer[i0].Pos.v[1], fbuffer);
-    */
+        Bresenhem(vbuffer[i2].Pos.v[0], vbuffer[i2].Pos.v[1], vbuffer[i0].Pos.v[0], vbuffer[i0].Pos.v[1], fbuffer);*/
+    
     }
 
 }

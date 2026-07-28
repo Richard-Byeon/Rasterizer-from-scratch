@@ -1,7 +1,9 @@
 /*
-	FILE: Barycentric.h
+	FILE: Rasterizer.h
 
 	CONTENTS : BoundingBox struct, EdgeEquation(), ComputeBoundingBox() and RasterizeTriangle()
+
+	LAST MODIFIDED: Renamed the directory name & file name | Barycentric->Rasterizer
 */
 
 #pragma once

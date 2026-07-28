@@ -1,8 +1,9 @@
 #pragma once
 
 /*
-	FILE: TEXTURING.h
+	FILE: Texturing.h
 
+	LAST MODIFIDED: Added Sample(), GetTexel(), GenerateCheckerboard()
 */
 
 #include "Vertex/Vertex.h"
@@ -14,7 +15,10 @@ struct Texture
 	std::vector<Color> Data;
 };
 
-// Where is this function used? << at the rasterizer.
+Color Sample(const Texture& Tex, Vec2 UV, int i, int j);
 
-Color GetTexel(int i, int j);
+Color GetTexel(const Texture& Tex, int i, int j);
+
+Texture GenerateCheckerboard(int Width, int Height, int cellSize);
+
 

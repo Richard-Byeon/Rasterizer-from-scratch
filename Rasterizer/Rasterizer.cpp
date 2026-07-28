@@ -1,9 +1,10 @@
 /*
-	FILE: Barycentric.cpp
+	FILE: Raterizer.cpp
 
+	LAST MODIFIDED: Added UV interpolation to RasterizeTriangle()
 */
 
-#include "Barycentric.h"
+#include "Rasterizer.h"
 
 
 float EdgeEquation(const Vec3& P, const Vec3& v1, const Vec3& v2)
@@ -32,7 +33,9 @@ void RasterizeTriangle(
 	int Width, int Height)
 {
 	float Area2 = EdgeEquation(v3.Pos, v1.Pos, v2.Pos);
+	
 	if (Area2 == 0.0f) return;
+	
 	float invArea2 = 1.0f / Area2;
 
 	// Clamping
@@ -57,8 +60,8 @@ void RasterizeTriangle(
 			b = EdgeEquation(P, v2.Pos, v3.Pos);
 			c = EdgeEquation(P, v3.Pos, v1.Pos);
 
-			bool inside = (Area2 > 0) ? (a >= 0 && b >= 0 && c >=0) 
-				: (a <= 0 && b <= 0 && c <= 0);
+			bool inside = (Area2 > 0) ?	 (a >= 0 && b >= 0 && c >=0) 
+									  : (a <= 0 && b <= 0 && c <= 0);
 
 			if (!inside)
 				continue;
@@ -66,9 +69,10 @@ void RasterizeTriangle(
 			l1 = b * invArea2;
 			l2 = c * invArea2;
 			l3 = a * invArea2;
-		
+			
+			// Depth interpolate
 			float z = l1 * v1.Pos.v[2] + l2 * v2.Pos.v[2] + l3 * v3.Pos.v[2];
-
+			
 			if (z >= ZBuffer[idx])
 				continue;
 

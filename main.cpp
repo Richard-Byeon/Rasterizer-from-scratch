@@ -12,7 +12,7 @@
 #include				 <iostream>
 #include				"Math/Math.h"
 #include	  "Bresenhem/Bresenhem.h"
-#include  "Barycentric/Barycentric.h"
+#include	"Rasterizer/Rasterizer.h"
 #include			"Camera/Camera.h"
 #include	 "Vertex/VertexShading.h"
 #include			"UV/Texturing.h"
@@ -118,6 +118,9 @@ int main(int argc, char* argv[])
 	std::vector<float>			ZBuffer(WIDTH * HEIGHT, 1.0f); // init Zbuffer as 1.0f (far)
 	std::vector<Vertex>			VertexBuffer;
 	std::vector<uint32_t>		IndexBuffer;
+
+	Texture Tex = GenerateCheckerboard(256, 256, 32);
+
 
 	GenerateUVSphere(12, 16, 70.0f, VertexBuffer, IndexBuffer);
 

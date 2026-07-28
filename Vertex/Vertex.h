@@ -6,6 +6,7 @@
 */
 
 #include <vector>
+#include <algorithm>
 #include "Math/Math.h"
 
 #define WHITE 255
