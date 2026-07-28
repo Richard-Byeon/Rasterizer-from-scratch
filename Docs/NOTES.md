@@ -89,4 +89,69 @@ $$
    (4) Filtering: discretize continuous (s', t') to texel index
        (nearest / bilinear).
        Texel center convention : (i + 0.5, j + 0.5)
+
+   ## July 28th, 2026
+
+   ### GenerateUVSphere() - Index Allocation
+      **Goal**: Connect allocated vertices into triangles. Vertices are laid out as a 2D `(ring, seg)` grid but stored in a 1D `vbuf`, so I need a formula to map grid position. This formula is exactly same as accessing 1D array like a 2D array.
    
+      **Strategy: quad-first.** The grid's natural cell is not a triangle. So let's start with quad. Pick the 4 corners of a quad, then split it along a diagonal into 2 triangles. This is easier than picking 3 vertices directly because coverage (no gaps, no overlaps) is automatic once you cut a rectangle in half.
+      
+      ```
+                       seg     seg + 1
+                        |         |
+          ring     ---- A ------- B
+                        |         |
+          ring + 1 ---- C ------- D
+      ```
+      
+      **Index formula** (row-major, since the generation loop fills ring 0 fully,
+      then ring 1, ...):
+      
+      ```
+      index(ring, seg) = ring * (slices + 1) + seg
+      
+      A = ring * (slices + 1) + seg      // top-left
+      B = A + 1                          // top-right
+      C = A + (slices + 1)               // bottom-left  (one row down)
+      D = C + 1                          // bottom-right
+      ```
+      
+      The `(slices + 1)` is the per-row vertex count. It's `slices + 1`, not `slices`, because of seam duplication (see below).
+      
+      **Split into triangles** along diagonal A-D:
+      
+      ```
+      triangle 1: (A, C, D)
+      triangle 2: (A, D, B)
+      ```
+      
+      A-D is the shared diagonal. Keep the same winding rule for every cell so that the culling stays consistent.
+      
+      **Loop** (poles absorbed as rings — no cap special-casing):
+      
+      ```cpp
+      for (int ring = 0; ring < stacks; ring++)
+          for (int seg = 0; seg < slices; seg++)
+              // compute A, B, C, D; push 2 triangles
+      ```
+      
+      **Two independent design decisions** (don't conflate them):
+      
+      1. **Poles absorbed into the loop** This was what AI-made `GenerateUVSphere()` and hand-made `GenerateUVSpehre()` sets apart. (ring 0 = north, ring stacks = south, each a degenerate ring of `slices+1` coincident vertices).
+         Purpose: makes UV possible at the poles AND removes the top-cap/bottom-cap special cases — the whole grid becomes one uniform quad loop. Nothing todo with the seam.
+         Cost: pole-adjacent quads produce degenerate (Area2 == 0) triangles.
+         These are harmless — `RasterizeTriangle` already guards `if (Area2 == 0)
+         return;`.
+      
+      2. **Seam duplication** (`slices + 1` columns, i.e. `seg` goes 0..slices).
+         Purpose: NOT to remove the seam — the seam is a topological necessity and
+         cannot be removed. It removes the UV *wraparound artifact*. Without it,
+         the last triangle connects seg(slices-1) → seg 0, so u runs 0.9375 → 0.0 (backwards), compressing the whole texture into one strip.
+         With it, seg=slices is a copy of seg=0 (same position, u=1.0 instead of
+         0.0), so u runs 0.9375 → 1.0 monotonically.
+      
+      **Counts** (stacks=12, slices=16 → verified):
+      - vertices = (stacks+1)(slices+1) = 221
+      - triangles = 2 * stacks * slices = 182  (degenerate included)
+      - indices = 6 * stacks * slices = 1326
