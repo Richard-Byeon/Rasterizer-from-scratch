@@ -26,5 +26,5 @@ struct Vertex
 	Vec3 Normal;        // 12
 	Vec3 Pos;           // 12
 	Color Color;        // 4
-	float W = 1.0f;
+	float W = 1.0f;		// 4
 };

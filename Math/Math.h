@@ -1,7 +1,8 @@
 #pragma once
 
 #include <cmath>
-#define PI 3.141592
+
+constexpr float PI = 3.14159265f;
 
 struct Vec2 
 {
@@ -61,8 +62,8 @@ Vec4 cross(const Vec4& v1, const Vec4& v2);
 Mat4 operator*(const Mat4&, float);				
 Mat4 operator*(const Mat4&, const Mat4&);		
 Vec4 operator*(const Mat4&, const Vec4&);		
-Mat4 Transpose(const Mat4& m);						
-Mat4& invert(const Mat4& m);						
+Mat4 Transpose(const Mat4& m);
+// Deleted Invert(), since we don't need invert right away.
 Mat4 HomogenousMatrix(const Vec3& translation, const Vec3& angle, const Vec3& scale);
 
 /////////////////////////
@@ -73,8 +74,11 @@ Mat4 HomogenousMatrix(const Vec3& translation, const Vec3& angle, const Vec3& sc
 Mat4 RotationX(float angle);
 Mat4 RotationY(float angle);
 Mat4 RotationZ(float angle);
+Mat4 RotationMatrix(const Vec3& angle);
 
-// Scale
 Mat4 Scale(const Vec3& scalar = {1, 1, 1});
 
 Mat4 Translation(const Vec3& v);
+
+// NormalMatrix from HomogenousMatrix added
+Mat4 NormalMatrix(const Mat4& HomogenousMatrix);

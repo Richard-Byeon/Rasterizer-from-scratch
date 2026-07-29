@@ -17,13 +17,8 @@ struct ViewPort
 	float MinDepth = 0.0f;
 	float MaxDepth = 1.0f;
 };
-
-void ModelTransform(
-	std::vector<Vertex>& vBufferIn,
-	const Vec3& translation, 
-	const Vec3& angle, 
-	const Vec3& scale
-);
+// Too many arugments: Needs to be fixed later.
+void ModelTransform(std::vector<Vertex>& vBufferIn, const Mat4& TransfromM, const Mat4& NormalM);
 
 void ViewTransform(std::vector<Vertex>& vBufferIn, const Camera& Camera);
 

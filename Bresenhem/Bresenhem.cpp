@@ -86,33 +86,7 @@ bool isBackFace(const Vec4& v1, const Vec4& v2, const Vec4& v3)
     return (det > 0.0f);
 }
 
-// Draws triangle
-void Draw(std::vector<Vertex>& vbuffer, std::vector<uint32_t>& ibuffer, std::vector<Color>& fbuffer)
-{
-    // ClearFrame(fbuffer);
-    
-    // Divide index buffer's size by 3 so that we can stride(or traverse) index buffer by 3.
-    int triangleCount = ibuffer.size() / 3;
-
-    for (int t = 0; t < triangleCount; t++)
-    {
-        uint32_t i0 = ibuffer[3 * t + 0];
-        uint32_t i1 = ibuffer[3 * t + 1];
-        uint32_t i2 = ibuffer[3 * t + 2];
-
-        if (isBackFace(vbuffer[i0].Pos, vbuffer[i1].Pos, vbuffer[i2].Pos))
-            continue;
-
-        Bresenhem(vbuffer[i0].Pos.v[0], vbuffer[i0].Pos.v[1], vbuffer[i1].Pos.v[0], vbuffer[i1].Pos.v[1], fbuffer);
-        Bresenhem(vbuffer[i1].Pos.v[0], vbuffer[i1].Pos.v[1], vbuffer[i2].Pos.v[0], vbuffer[i2].Pos.v[1], fbuffer);
-        Bresenhem(vbuffer[i2].Pos.v[0], vbuffer[i2].Pos.v[1], vbuffer[i0].Pos.v[0], vbuffer[i0].Pos.v[1], fbuffer);
-
-        //    // z-test?
-
-    }
-}
-
-void Draw(std::vector<Vertex>& vbuffer, std::vector<uint32_t>& ibuffer, std::vector<Color>& fbuffer, std::vector<float>& zbuffer)
+void Draw(std::vector<Vertex>& vbuffer, std::vector<uint32_t>& ibuffer, std::vector<Color>& fbuffer, std::vector<float>& zbuffer, const Texture& Tex)
 {
     int triangleCount = (int)ibuffer.size() / 3;
 
@@ -131,11 +105,12 @@ void Draw(std::vector<Vertex>& vbuffer, std::vector<uint32_t>& ibuffer, std::vec
 
         BoundingBox bbox = ComputeBoundingBox(a.Pos, b.Pos, c.Pos);
        
-        RasterizeTriangle(a, b, c, bbox, fbuffer, zbuffer, WIDTH, HEIGHT);
+        RasterizeTriangle(a, b, c, bbox, fbuffer, zbuffer, WIDTH, HEIGHT, Tex);
+
         /*Bresenhem(vbuffer[i0].Pos.v[0], vbuffer[i0].Pos.v[1], vbuffer[i1].Pos.v[0], vbuffer[i1].Pos.v[1], fbuffer);
         Bresenhem(vbuffer[i1].Pos.v[0], vbuffer[i1].Pos.v[1], vbuffer[i2].Pos.v[0], vbuffer[i2].Pos.v[1], fbuffer);
         Bresenhem(vbuffer[i2].Pos.v[0], vbuffer[i2].Pos.v[1], vbuffer[i0].Pos.v[0], vbuffer[i0].Pos.v[1], fbuffer);*/
-    
+        
     }
 
 }

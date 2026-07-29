@@ -16,6 +16,7 @@ add_executable(RFS
     Math/Math.cpp
     Vertex/VertexShading.cpp
     Rasterizer/Rasterizer.cpp
+    ThirdParty/stb_impl.cpp
 )
 
 # Link to the actual SDL3 library.

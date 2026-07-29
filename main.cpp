@@ -3,9 +3,10 @@
 
 			FILE: main.cpp (temporary name)
 	
-			LAST UPDATE: 26th, JULY, 2026
-			LAST MODIFIED FEATURE: GenerateUVSphere() modifeded, UV coordinate configuration underway
-*/
+			LAST UPDATE: 29th, JULY, 2026
+			LAST MODIFIED FEATURE: Refactored ModelTrasnform, Texturing, Reading a file (.png)
+			*/
+
 
 #include				 <algorithm>
 #include				 <SDL3/SDL.h>
@@ -16,6 +17,8 @@
 #include			"Camera/Camera.h"
 #include	 "Vertex/VertexShading.h"
 #include			"UV/Texturing.h"
+#include			"Shading/Phong.h"
+
 // ASPECT = HEIGHT(600) / WIDTH(800) = 4/3
 
 constexpr float ASPECT = (float)WIDTH / (float)HEIGHT;
@@ -110,6 +113,39 @@ void GenerateUVSphere(int stacks, int slices, float radius,
 	{
 		std::cout << "face" << i << ": " << ibuf[3 * i] << " " << ibuf[3*i + 1] << " " << ibuf[3*i + 2]<< "\n";
 	}*/
+	/*for (int ring = 0; ring <= stacks; ring++)
+	{
+		const Vertex& f = vbuf[ring * (slices + 1) + 0];
+		const Vertex& l = vbuf[ring * (slices + 1) + slices];
+		std::cout << ring
+			<< " dPos=" << (f.Pos.v[0] - l.Pos.v[0]) << ","
+			<< (f.Pos.v[1] - l.Pos.v[1]) << ","
+			<< (f.Pos.v[2] - l.Pos.v[2])
+			<< " u=" << f.UV.v[0] << "/" << l.UV.v[0] << "\n";
+	}*/
+
+}
+
+// written by AI. This function is to check if there is any distortion on the textured object. (visually)
+void GenerateQuad(float halfSize, float y,
+	std::vector<Vertex>& vbuf, std::vector<uint32_t>& ibuf)
+{
+	vbuf.clear();
+	ibuf.clear();
+
+	Vertex v;
+	v.Normal = { 0.0f, 1.0f, 0.0f };
+	v.Color = { 255, 255, 255, 255 };
+
+	//  z = +halfSize (far)     0 --- 1
+	//                          |     |
+	//  z = -halfSize (near)    2 --- 3
+	v.Pos = { -halfSize, y,  halfSize }; v.UV = { 0.0f, 1.0f }; vbuf.push_back(v);
+	v.Pos = { halfSize, y,  halfSize }; v.UV = { 1.0f, 1.0f }; vbuf.push_back(v);
+	v.Pos = { -halfSize, y, -halfSize }; v.UV = { 0.0f, 0.0f }; vbuf.push_back(v);
+	v.Pos = { halfSize, y, -halfSize }; v.UV = { 1.0f, 0.0f }; vbuf.push_back(v);
+
+	ibuf = { 0, 1, 2,   2, 1, 3 };	
 }
 
 int main(int argc, char* argv[])
@@ -119,10 +155,14 @@ int main(int argc, char* argv[])
 	std::vector<Vertex>			VertexBuffer;
 	std::vector<uint32_t>		IndexBuffer;
 
-	Texture Tex = GenerateCheckerboard(256, 256, 32);
-
+	// Absolute root for now, later will be changed to relative root.
+	Texture Tex = LoadTexture("C:/C++/Project/RFS/Assets/test_nonsquare.png");
+	
+	if (Tex.Width == 0) return 1;
 
 	GenerateUVSphere(12, 16, 70.0f, VertexBuffer, IndexBuffer);
+
+	//GenerateQuad(100.0f, 10.0f, VertexBuffer, IndexBuffer);
 
 	if (!SDL_Init(SDL_INIT_VIDEO))
 	{
@@ -161,10 +201,12 @@ int main(int argc, char* argv[])
 
 	Vec3 Translation = { 400, 300, 300 };
 	Vec3       Scale = { 1.3, 1.3, 1.3 };
+	Vec3	   Angle = { 0.0f, 0.0f ,0.0f };
+
 	const float RotationSpeedDegPerSec = 45.0f;
 
 	camera.AT = Translation;
-	camera.EYE = { 400, 100, 30 };
+	camera.EYE = { 300, 10, 30 };
 	camera.UP = { 0, 1, 0 };
 
 	camera.n = normal(camera.AT - camera.EYE);
@@ -173,6 +215,9 @@ int main(int argc, char* argv[])
 
 	Uint64 startTicks = SDL_GetTicks();
 
+	float yaw = 0.0f;
+	float pitch = 0.0f;
+	float roll = 0.0f;
 
 	bool running = true;
 	SDL_Event event;
@@ -183,25 +228,37 @@ int main(int argc, char* argv[])
 		{
 			if (event.type == SDL_EVENT_QUIT)
 				running = false;
+
+			if (event.type == SDL_EVENT_KEY_DOWN)
+			{
+				// Added on 29th July
+				if (event.key.key == SDLK_UP)    pitch -= 15.0f;
+				if (event.key.key == SDLK_LEFT)  yaw -= 15.0f;
+				if (event.key.key == SDLK_DOWN)  pitch += 15.0f;
+				if (event.key.key == SDLK_RIGHT) yaw += 15.0f;
+				
+			}
+
         }
 		
-		Uint64 nowTicks = SDL_GetTicks();
-		float elapsedSec = (nowTicks - startTicks) / 1000.0f;
-		Vec3 Angle = {
-			fmodf(elapsedSec * 30.0f,  360.0f),   // x
-			fmodf(elapsedSec * 45.0f,  360.0f),   // y
-			0.0f   // z
-		};
+		/*Uint64 nowTicks = SDL_GetTicks();
+		float elapsedSec = (nowTicks - startTicks) / 1000.0f;*/
+		Angle = { pitch, yaw, 0.0f };
 
 		std::fill(Framebuffer.begin(), Framebuffer.end(), Color{});
 		std::fill(ZBuffer.begin(), ZBuffer.end(), 1.0f);
 
 		VertexBuffer = VertexBufferOriginal;
-		ModelTransform(VertexBuffer, Translation, Angle, Scale);
+
+		// MODELTRANSFORM REFACTOR: PASS THE HOMOGENOUS MATRIX INSTEAD OF PARTS OF THESE.
+		Mat4 TransformM = HomogenousMatrix(Translation, Angle, Scale);
+		Mat4 NormalM = NormalMatrix(TransformM);
+
+		ModelTransform(VertexBuffer, TransformM, NormalM);
 		ViewTransform(VertexBuffer, camera);
 		PerspectiveProjection(VertexBuffer, fovy, ASPECT);
 		ViewPortTransfrom(VertexBuffer, WIDTH, HEIGHT);
-		Draw(VertexBuffer, IndexBuffer, Framebuffer, ZBuffer);
+		Draw(VertexBuffer, IndexBuffer, Framebuffer, ZBuffer, Tex);
 
 		SDL_RenderClear(renderer);
 		SDL_UpdateTexture(texture, nullptr, Framebuffer.data(), WIDTH * sizeof(Color));
@@ -215,5 +272,5 @@ int main(int argc, char* argv[])
     SDL_Quit();
 
 
-	return 0;
+	return 0;	
 }

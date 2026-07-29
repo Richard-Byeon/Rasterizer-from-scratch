@@ -8,17 +8,18 @@
 
 #include "Vertex/Vertex.h"
 
+
 struct Texture
 {
 	int Width	= 0;
 	int Height	= 0;
-	std::vector<Color> Data;
+	std::vector<Color> Data;	
 };
 
-Color Sample(const Texture& Tex, Vec2 UV, int i, int j);
+Color Sample(const Texture& Tex, Vec2 UV);
 
 Color GetTexel(const Texture& Tex, int i, int j);
 
 Texture GenerateCheckerboard(int Width, int Height, int cellSize);
 
-
+Texture LoadTexture(const char* path);

@@ -25,12 +25,21 @@ BoundingBox ComputeBoundingBox(const Vec3& v1, const Vec3& v2, const Vec3& v3)
 	return result;
 }
 
+Color ShadeFragment(const Vertex& v1, const Vertex& v2, const Vertex& v3,
+	float l1, float l2, float l3, const Texture& Tex)
+{
+	float u = l1 * v1.UV.v[0] + l2 * v2.UV.v[0] + l3 * v3.UV.v[0];
+	float v = l1 * v1.UV.v[1] + l2 * v2.UV.v[1] + l3 * v3.UV.v[1];
+
+	return Sample(Tex, Vec2(u, v));
+}
+
 void RasterizeTriangle(
 	const Vertex& v1, const Vertex& v2, const Vertex& v3,
 	const BoundingBox& Bbox,
 	std::vector<Color>& FrameBuffer,
 	std::vector<float>& ZBuffer,
-	int Width, int Height)
+	int Width, int Height, const Texture& Tex)
 {
 	float Area2 = EdgeEquation(v3.Pos, v1.Pos, v2.Pos);
 	
@@ -38,6 +47,10 @@ void RasterizeTriangle(
 	
 	float invArea2 = 1.0f / Area2;
 
+	float invW1 = 1.0f / v1.W;
+	float invW2 = 1.0f / v2.W;
+	float invW3 = 1.0f / v3.W;
+	
 	// Clamping
 	int x0 = std::max((int)Bbox.xmin, 0);
 	int x1 = std::min((int)Bbox.xmax, Width - 1);
@@ -76,13 +89,22 @@ void RasterizeTriangle(
 			if (z >= ZBuffer[idx])
 				continue;
 
+			float denom = l1 * invW1 + l2 * invW2 + l3 * invW3;
+			float invDenom = 1.0f / denom;
+
+			float pl1 = l1 * invW1 * invDenom;
+			float pl2 = l2 * invW2 * invDenom;
+			float pl3 = l3 * invW3 * invDenom;
+
 			ZBuffer[idx] = z;
 
-			uint8_t R = (uint8_t)(l1 * v1.Color.R + l2 * v2.Color.R + l3 * v3.Color.R);
-			uint8_t G = (uint8_t)(l1 * v1.Color.G + l2 * v2.Color.G + l3 * v3.Color.G);
-			uint8_t B = (uint8_t)(l1 * v1.Color.B + l2 * v2.Color.B + l3 * v3.Color.B);
+			// perpective correction (UV)
 
-			FrameBuffer[idx] = { R, G, B, 255 };
+			/*uint8_t R = (uint8_t)(l1 * v1.Color.R + l2 * v2.Color.R + l3 * v3.Color.R);
+			uint8_t G = (uint8_t)(l1 * v1.Color.G + l2 * v2.Color.G + l3 * v3.Color.G);
+			uint8_t B = (uint8_t)(l1 * v1.Color.B + l2 * v2.Color.B + l3 * v3.Color.B);*/
+		
+			FrameBuffer[idx] = ShadeFragment(v1, v2, v3, pl1, pl2, pl3, Tex);
 		}
 	}
 }

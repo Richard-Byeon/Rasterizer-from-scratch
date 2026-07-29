@@ -5,46 +5,27 @@
 
 #include "VertexShading.h"
 
-void ModelTransform(
-	std::vector<Vertex>& vBufferIn, 
-	const Vec3& translation,
-	const Vec3& angle,
-	const Vec3& scale)
+void ModelTransform(std::vector<Vertex>& vBufferIn, const Mat4& TransformM, const Mat4& NormalM)
 {
-	
-	int VertexCount = vBufferIn.size();
+	int vertexCount = vBufferIn.size();
 
-	/*std::vector<Vertex> vBufferOut(VertexCount);*/
-	std::vector<Vec4>	Vertices(VertexCount);
-
-	
-	// From vec3 -> vec4
-	for (int i = 0; i < VertexCount; i++)
-		Vertices[i] = Vec4(vBufferIn[i].Pos, 1);
-
-	Mat4 ModelM;
-
-	ModelM = HomogenousMatrix(translation, angle, scale);
-
-	for (int i = 0; i < VertexCount; i++)
-		Vertices[i] = ModelM * Vertices[i];
-	
-	for (int i = 0; i < VertexCount; i++)
+	for (int i = 0; i < vertexCount; i++)
 	{
-		vBufferIn[i].Pos.v[0] = Vertices[i].v[0];
-		vBufferIn[i].Pos.v[1] = Vertices[i].v[1];
-		vBufferIn[i].Pos.v[2] = Vertices[i].v[2];
+		Vec4 p = TransformM * Vec4(vBufferIn[i].Pos,	1.0f);
+		Vec4 n = NormalM	* Vec4(vBufferIn[i].Normal, 0.0f);
+		
+		vBufferIn[i].Pos = { p.v[0], p.v[1], p.v[2] };
+		vBufferIn[i].Normal = normal({ n.v[0], n.v[1], n.v[2] });
 	}
-	 // this goes straight to ViewTransform(...)
 }
 
 void ViewTransform(std::vector<Vertex>& vBufferIn, const Camera& Camera)
 {
-	int VertexCount = vBufferIn.size();
+	int vertexCount = vBufferIn.size();
 	/*std::vector<Vertex> vBufferOut(VertexCount);*/
-	std::vector<Vec4>	Vertices(VertexCount);
+	std::vector<Vec4>	Vertices(vertexCount);
 
-	for (int i = 0; i < VertexCount; i++)
+	for (int i = 0; i < vertexCount; i++)
 		Vertices[i] = Vec4(vBufferIn[i].Pos, 1);
 	
 
@@ -71,10 +52,10 @@ void ViewTransform(std::vector<Vertex>& vBufferIn, const Camera& Camera)
 
 	ViewM = R * T;
 
-	for (int i = 0; i < VertexCount; i++)
+	for (int i = 0; i < vertexCount; i++)
 		Vertices[i] = ViewM * Vertices[i];
 
-	for (int i = 0; i < VertexCount; i++)
+	for (int i = 0; i < vertexCount; i++)
 	{
 		vBufferIn[i].Pos.v[0] = Vertices[i].v[0];
 		vBufferIn[i].Pos.v[1] = Vertices[i].v[1];
@@ -107,6 +88,7 @@ void OrthographicProjection(std::vector<Vertex>& vBufferIn)
 	}
 }
 
+// Spaghetti code. refactor required
 void PerspectiveProjection(std::vector<Vertex>& vBufferIn, float fovy, float ASPECT)
 {
 	Mat4 ProjM;		

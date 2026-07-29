@@ -1,3 +1,9 @@
+/*
+	FILE: Math.cpp
+
+	LAST MODIFIDED:
+*/
+
 #include "Math.h"
 
 // Vec2, 3, 4 init
@@ -195,6 +201,11 @@ Mat4 RotationZ(float angle = 0.0f)
 	return Matrix;
 }
 
+Mat4 RotationMatrix(const Vec3& angle)
+{
+	return RotationZ(angle.v[2]) * RotationY(angle.v[1]) * RotationX(angle.v[0]);
+}
+
 Mat4 Scale(const Vec3& scalar)
 {	
 	Mat4 Matrix;
@@ -219,16 +230,26 @@ Mat4 Translation(const Vec3& v)
 
 Mat4 HomogenousMatrix(const Vec3& translation, const Vec3& angle, const Vec3& scale)
 {
-	Mat4 T;
-	Mat4 R;
-	Mat4 S;
+	return Translation(translation) * RotationMatrix(angle) * Scale(scale);
+}
 
-	T = Translation(translation);
-	R = RotationZ(angle.v[2]) * RotationY(angle.v[1]) * RotationX(angle.v[0]);
-	S = Scale(scale);
+Mat4 NormalMatrix(const Mat4& HomogenousMatrix)
+{
+	// Using cofactor
+	Vec3 a0 = { HomogenousMatrix.m[0], HomogenousMatrix.m[1], HomogenousMatrix.m[2] };
+	Vec3 a1 = { HomogenousMatrix.m[4], HomogenousMatrix.m[5], HomogenousMatrix.m[6] };
+	Vec3 a2 = { HomogenousMatrix.m[8], HomogenousMatrix.m[9], HomogenousMatrix.m[10] };
 
-	// Product order: RZ * RY * RX ( yaw * pitch * roll )
+	Vec3 c0 = cross(a1, a2);
+	Vec3 c1 = cross(a2, a0);
+	Vec3 c2 = cross(a0, a1);
 
-	return T * R * S;
+	Mat4 N;
+
+	N.m[0] = c0.v[0]; N.m[1] = c0.v[1]; N.m[2]	= c0.v[2];
+	N.m[4] = c1.v[0]; N.m[5] = c1.v[1]; N.m[6]	= c1.v[2];
+	N.m[8] = c2.v[0]; N.m[9] = c2.v[1]; N.m[10] = c2.v[2];
+
+	return N;
 }
 
