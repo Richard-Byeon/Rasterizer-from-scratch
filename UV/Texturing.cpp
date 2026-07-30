@@ -65,5 +65,4 @@ Texture LoadTexture(const char* path)
 	stbi_image_free(pixels);
 
 	return Tex;
-
 }

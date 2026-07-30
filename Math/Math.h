@@ -30,10 +30,6 @@ struct Mat4 {
 	Mat4();	
 };
 
-////////////////////////////
-////	VEC4 FUNCT	    ////
-///////////////////////////
-
 Vec2 operator+(const Vec2& v1, const Vec2& v2);
 
 ////////////////////////////
@@ -65,10 +61,6 @@ Vec4 operator*(const Mat4&, const Vec4&);
 Mat4 Transpose(const Mat4& m);
 // Deleted Invert(), since we don't need invert right away.
 Mat4 HomogenousMatrix(const Vec3& translation, const Vec3& angle, const Vec3& scale);
-
-/////////////////////////
-////	TRNSFRMTN	 ////
-/////////////////////////
 
 // Rotation
 Mat4 RotationX(float angle);

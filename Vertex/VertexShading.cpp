@@ -23,45 +23,16 @@ void ViewTransform(std::vector<Vertex>& vBufferIn, const Camera& Camera)
 {
 	int vertexCount = vBufferIn.size();
 	/*std::vector<Vertex> vBufferOut(VertexCount);*/
-	std::vector<Vec4>	Vertices(vertexCount);
-
-	for (int i = 0; i < vertexCount; i++)
-		Vertices[i] = Vec4(vBufferIn[i].Pos, 1);
-	
 
 	Mat4 ViewM;
-	Mat4 T;
-	Mat4 R;
 
-	Vec3 EYE = Camera.EYE;
-	Vec3 U, V, N;
-
-	U = Camera.u;
-	V = Camera.v;
-	N = Camera.n;
-	
-	EYE.v[0] = -EYE.v[0];
-	EYE.v[1] = -EYE.v[1];
-	EYE.v[2] = -EYE.v[2];
-
-	T = Translation(EYE);
-
-	for (int i = 0; i < 3; i++) R.m[i]	   = U.v[i];
-	for (int i = 0; i < 3; i++) R.m[4 + i] = V.v[i];
-	for (int i = 0; i < 3; i++) R.m[8 + i] = N.v[i];
-
-	ViewM = R * T;
-
-	for (int i = 0; i < vertexCount; i++)
-		Vertices[i] = ViewM * Vertices[i];
-
+	ViewM = Camera.ViewMatrix();
 	for (int i = 0; i < vertexCount; i++)
 	{
-		vBufferIn[i].Pos.v[0] = Vertices[i].v[0];
-		vBufferIn[i].Pos.v[1] = Vertices[i].v[1];
-		vBufferIn[i].Pos.v[2] = Vertices[i].v[2];
+		Vec4 p = ViewM * Vec4(vBufferIn[i].Pos, 1.0f);
+		
+		vBufferIn[i].Pos = { p.v[0], p.v[1], p.v[2] };
 	}
-
 	//return vBufferOut; // this goes straight to PerspectiveTransform
 }
 

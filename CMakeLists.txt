@@ -15,6 +15,7 @@ add_executable(RFS
     Bresenhem/Bresenhem.cpp
     Math/Math.cpp
     Vertex/VertexShading.cpp
+    Camera/Camera.cpp
     Rasterizer/Rasterizer.cpp
     ThirdParty/stb_impl.cpp
 )

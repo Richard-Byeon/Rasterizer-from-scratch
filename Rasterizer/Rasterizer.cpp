@@ -98,8 +98,6 @@ void RasterizeTriangle(
 
 			ZBuffer[idx] = z;
 
-			// perpective correction (UV)
-
 			/*uint8_t R = (uint8_t)(l1 * v1.Color.R + l2 * v2.Color.R + l3 * v3.Color.R);
 			uint8_t G = (uint8_t)(l1 * v1.Color.G + l2 * v2.Color.G + l3 * v3.Color.G);
 			uint8_t B = (uint8_t)(l1 * v1.Color.B + l2 * v2.Color.B + l3 * v3.Color.B);*/

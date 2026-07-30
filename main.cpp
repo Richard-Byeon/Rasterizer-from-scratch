@@ -81,7 +81,7 @@ void GenerateUVSphere(int stacks, int slices, float radius,
 	//	Idx Allocate & Face Allocate	//
 	//////////////////////////////////////
 
-	// We'll be using quad since the vertices are allocated as a grid and then slice that quad into two trinagle.
+	// We'll be using quad since the vertices are allocated as a grid. Then slice that quad into two trinagle.
 	//  
 
 	for (ring = 0; ring < stacks; ring++)
@@ -156,9 +156,12 @@ int main(int argc, char* argv[])
 	std::vector<uint32_t>		IndexBuffer;
 
 	// Absolute root for now, later will be changed to relative root.
-	Texture Tex = LoadTexture("C:/C++/Project/RFS/Assets/test_nonsquare.png");
+	Texture Tex = LoadTexture("C:/C++/Project/RFS/Assets/");
 	
-	if (Tex.Width == 0) return 1;
+	if (Tex.Width == 0)
+	{
+		Tex = GenerateCheckerboard(256, 256, 32);
+	}
 
 	GenerateUVSphere(12, 16, 70.0f, VertexBuffer, IndexBuffer);
 
@@ -206,13 +209,10 @@ int main(int argc, char* argv[])
 	const float RotationSpeedDegPerSec = 45.0f;
 
 	camera.AT = Translation;
-	camera.EYE = { 300, 10, 30 };
+	camera.EYE = { 300, 300, 30 };
 	camera.UP = { 0, 1, 0 };
 
-	camera.n = normal(camera.AT - camera.EYE);
-	camera.u = normal(cross(camera.UP, camera.n));
-	camera.v = normal(cross(camera.n, camera.u));
-
+	
 	Uint64 startTicks = SDL_GetTicks();
 
 	float yaw = 0.0f;
